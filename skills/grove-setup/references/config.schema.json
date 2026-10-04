@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/VictorGardi/grove-skills/shared/config.schema.json",
+  "title": "grove.config.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifactRoot", "adrDir", "contextFile", "commitHtml", "tracker", "commands", "limits"],
+  "properties": {
+    "artifactRoot": {
+      "type": "string",
+      "default": "docs/work",
+      "description": "Root directory for feature artifact folders."
+    },
+    "adrDir": {
+      "type": "string",
+      "default": "docs/adr",
+      "description": "Directory for Architecture Decision Records."
+    },
+    "contextFile": {
+      "type": "string",
+      "default": "CONTEXT.md",
+      "description": "Path to the domain glossary file."
+    },
+    "commitHtml": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether rendered .html companions are committed to git."
+    },
+    "tracker": {
+      "type": "object",
+      "oneOf": [
+        {
+          "additionalProperties": false,
+          "properties": { "type": { "const": "none" } },
+          "required": ["type"]
+        },
+        {
+          "additionalProperties": false,
+          "properties": {
+            "type": { "const": "linear" },
+            "team": { "type": "string" },
+            "postComments": { "type": "boolean", "default": false }
+          },
+          "required": ["type", "team"]
+        }
+      ]
+    },
+    "commands": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "test": { "type": "string" },
+        "typecheck": { "type": "string" },
+        "lint": { "type": "string" },
+        "build": { "type": "string" }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "maxOneWayDecisions": { "type": "integer", "default": 8 },
+        "maxSlices": { "type": "integer", "default": 8 },
+        "designMaxLines": { "type": "integer", "default": 220 }
+      }
+    }
+  }
+}
