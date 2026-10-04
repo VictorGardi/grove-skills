@@ -37,7 +37,12 @@ None. This is the entry point.
    `commands.test`, `commands.typecheck`, `commands.lint`, `commands.build`.
    Show the proposal and ask the human to confirm or correct it — one message,
    not one question per command.
-2. **Ask about the tracker.** Offer `none` or `linear`. If `linear`, check
+2. **Ask about the tracker.** Offer `none` or `linear`, and state plainly what
+   each means: `none` means every feature's source-of-truth ticket is the
+   local `00-ticket.md` snapshot `grove-questions` writes — no external
+   tracker is read or written, which is fully supported and the default.
+   `linear` additionally reads tickets by ID/URL via the Linear MCP server and
+   can post status comments back. If `linear`, check
    whether a Linear MCP server is already available in this agent session. If
    not, tell the human how to add one and continue with `tracker: { type: "linear", ... }`
    anyway — a missing MCP server at setup time is not a blocker, only a
