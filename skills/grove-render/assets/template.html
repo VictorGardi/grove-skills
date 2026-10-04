@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><!-- GROVE:TITLE --></title>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --fg: #1a1a1a; --muted: #6b7280; --border: #e5e7eb;
+    --card: #f9fafb; --accent: #2563eb; --accent-bg: #eff6ff;
+    --risk: #b45309; --risk-bg: #fffbeb;
+    --open: #7c3aed; --open-bg: #f5f3ff;
+    --deferred: #475569; --deferred-bg: #f1f5f9;
+    --new: #15803d; --modified: #b45309; --deleted: #b91c1c;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1115; --fg: #e5e7eb; --muted: #9ca3af; --border: #2a2e37;
+      --card: #171a21; --accent: #60a5fa; --accent-bg: #111c33;
+      --risk: #fbbf24; --risk-bg: #241d08;
+      --open: #c4b5fd; --open-bg: #1d1733;
+      --deferred: #94a3b8; --deferred-bg: #171b22;
+      --new: #4ade80; --modified: #fbbf24; --deleted: #f87171;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1115; --fg: #e5e7eb; --muted: #9ca3af; --border: #2a2e37;
+    --card: #171a21; --accent: #60a5fa; --accent-bg: #111c33;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--fg);
+    font: 15px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  .banner {
+    background: var(--accent-bg); color: var(--accent); padding: 10px 16px;
+    font-size: 13px; border-bottom: 1px solid var(--border);
+  }
+  .layout { display: flex; max-width: 1100px; margin: 0 auto; }
+  nav.toc {
+    width: 220px; flex-shrink: 0; padding: 24px 12px; position: sticky; top: 0;
+    align-self: flex-start; max-height: 100vh; overflow-y: auto;
+  }
+  nav.toc a { display: block; color: var(--muted); text-decoration: none; padding: 4px 0; font-size: 13px; }
+  nav.toc a:hover { color: var(--accent); }
+  main { flex: 1; min-width: 0; padding: 24px 16px 80px; }
+  h1, h2, h3 { line-height: 1.3; }
+  pre { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 12px; overflow-x: auto; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+  .diagram-fallback { margin-top: 8px; }
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 16px 0; }
+  .compare > div { border: 1px solid var(--border); border-radius: 8px; padding: 12px; background: var(--card); }
+  .compare h4 { margin-top: 0; }
+
+  .decision-card { border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin: 16px 0; background: var(--card); }
+  .decision-card .options { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-top: 12px; }
+  .option { border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+  .option.chosen { border-color: var(--accent); background: var(--accent-bg); }
+  .option h5 { margin: 0 0 6px; }
+  .option .meta { color: var(--muted); font-size: 12px; }
+
+  .filetree { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 13px; }
+  .filetree .new { color: var(--new); }
+  .filetree .modified { color: var(--modified); }
+  .filetree .deleted { color: var(--deleted); text-decoration: line-through; }
+  .badge { font-size: 10px; border-radius: 4px; padding: 1px 5px; margin-left: 6px; }
+  .badge.new { background: var(--new); color: #fff; }
+  .badge.modified { background: var(--modified); color: #fff; }
+  .badge.deleted { background: var(--deleted); color: #fff; }
+
+  .timeline { border-left: 2px solid var(--border); padding-left: 16px; margin: 16px 0; }
+  .timeline .slice { margin-bottom: 20px; position: relative; }
+  .timeline .slice::before {
+    content: ""; position: absolute; left: -21px; top: 4px; width: 10px; height: 10px;
+    border-radius: 50%; background: var(--accent);
+  }
+
+  .callout { border-radius: 8px; padding: 10px 14px; margin: 12px 0; border: 1px solid var(--border); }
+  .callout.risk { color: var(--risk); background: var(--risk-bg); border-color: var(--risk); }
+  .callout.open-question { color: var(--open); background: var(--open-bg); border-color: var(--open); }
+  .callout.deferred { color: var(--deferred); background: var(--deferred-bg); border-color: var(--deferred); }
+
+  @media (max-width: 720px) {
+    .layout { flex-direction: column; }
+    nav.toc { position: static; width: auto; max-height: none; }
+    .compare { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+  <div class="banner"><!-- GROVE:BANNER --></div>
+  <div class="layout">
+    <nav class="toc"><!-- GROVE:TOC --></nav>
+    <main><!-- GROVE:CONTENT --></main>
+  </div>
+  <script>
+    try {
+      mermaid.initialize({ startOnLoad: true, theme: matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'default' });
+    } catch (e) { /* mermaid CDN unreachable; <details> fallback source remains visible */ }
+  </script>
+</body>
+</html>
