@@ -2,37 +2,65 @@
 
 A personal repository of Agent Skills implementing **grove**: a phased,
 human-gated coding workflow — **Q**uestions → **R**esearch → **D**esign →
-**S**tructure → **P**lan → **I**mplement — inspired by HumanLayer's QRSPI.
+**S**tructure → **I**mplement — inspired by HumanLayer's QRSPI.
 Primary agent: [OpenCode](https://opencode.ai). Secondary: Claude Code. One
 set of skills, written to the open Agent Skills standard (folder per skill,
 `SKILL.md`), works unmodified in both.
 
-## The workflow
+## The three flows
 
-| Phase | Skill | Artifact | Gate to start | Human review |
-|---|---|---|---|---|
-| 0 | `grove-setup` | `grove.config.json`, `docs/adr/`, `CONTEXT.md` | — | once per repo |
-| 1 | `grove-questions` | `00-ticket.md`, `01-questions.md` | — | 2 min |
-| 2 | `grove-research` | `02-research.md` (+html) | soft: questions reviewed | skim, correct facts |
-| 3 | `grove-design` | `03-design.md` (+html) | soft: research reviewed | careful, ≤ ~200 lines |
-| 4 | `grove-structure` | `04-structure.md` (+html) | **hard: design approved** | careful, ≤ ~2 pages |
-| 5 | `grove-plan` | `05-plan.md` | **hard: structure approved** | light |
-| 6 | `grove-implement` | `06-implementation.md` + commits | **hard: structure + plan approved** | per slice |
-| — | `grove-approve` | sets `status: approved` | — | explicit "yes", every time |
-| — | `grove-render` | `*.html` companions | — | n/a (pure presentation) |
-| — | `grove-spike` | finding in `02-research.md`'s `## Spikes` | — | n/a (code always deleted) |
-| — | `grove-epic-status` | read-only report | — | n/a (nothing written) |
+Every feature runs in one **flow**, recorded as `flow` in its `feature.md`.
+The artifacts are the same in every flow; the flow decides how many times
+you stop and how many sessions it takes.
 
-An epic (`kind: epic`) runs phases 1–4 only, at system level, and splits
-into child features instead of slices — see **Big features: epics** below.
+| Flow | Use it for | Sessions | Your stops |
+|---|---|---|---|
+| `full` | epics; large or risky features (size L) | `grove-start` → `grove-design` → `grove-structure` → `grove-implement` | skim start → review design → review structure → each slice |
+| `standard` | normal features (size M) and most epic children | `grove-start` → `grove-design` → `grove-implement` | skim start → review design + structure together → each slice |
+| `small` | clear, known-pattern changes, ≤ ~3 files, no one-way decision (size S) | `grove-start` → `grove-implement` | approve questions → each slice |
+
+`grove-questions` (run inside `grove-start`) proposes a flow from its size
+verdict — epic → `full`, epic child → `standard`, S → `small`, M →
+`standard`, L → `full` — with a one-line reason, and you confirm or change
+it. You can change the flow at any time by asking; the change and your
+reason are logged in `feature.md`'s `## Flow log`. A skill never switches
+the flow on its own — it only proposes (e.g. `grove-implement` in `small`
+flow hitting a one-way decision proposes `standard`).
+
+Features created before flows existed have no `flow` and run as `full`.
+
+### What each flow writes
+
+| Artifact | `full` | `standard` | `small` |
+|---|---|---|---|
+| `feature.md`, `00-ticket.md`, `01-questions.md` | `grove-start` | `grove-start` | `grove-start` |
+| `02-research.md` (+html) | `grove-start` (blind subagents) | `grove-start` (blind subagents) | — |
+| `03-design.md` (+html) | `grove-design` | `grove-design` | — |
+| `04-structure.md` (+html) | `grove-structure` | `grove-design`, same session | — |
+| `05-plan.md` | `grove-implement`, one slice at a time | same | same (minimal) |
+| `06-implementation.md` + commits | `grove-implement` | same | same |
+
+### All skills
+
+| Skill | What it does |
+|---|---|
+| `grove-setup` | once per repo: `grove.config.json`, `docs/adr/`, `CONTEXT.md`, `AGENTS.md` block |
+| `grove-start` | **start here**: questions, flow choice, blind research, skim summary, inline approval |
+| `grove-questions` | the questions phase alone — to revise, or used by `grove-start` |
+| `grove-research` | the research phase alone — to revise, or if `grove-start` couldn't run it |
+| `grove-design` | the one-way-door grilling loop; in `standard` flow continues into the slices |
+| `grove-structure` | slices (or an epic's children) on their own — `full` flow, epics, or revising |
+| `grove-implement` | per slice: plan against current code → check against design → execute → verify → commit → stop |
+| `grove-approve` | approve later, outside the session that wrote the artifact |
+| `grove-render` | `*.html` companions (pure presentation, never hand-edited) |
+| `grove-spike` | throwaway prototype; the finding goes into `02-research.md`'s `## Spikes` |
+| `grove-epic-status` | read-only report of an epic's children: flow, stage, staleness, next action |
 
 Artifacts live in the target repo at `<artifactRoot>/<feature-slug>/`
 (default `artifactRoot`: `docs/work`). Markdown is canonical; `.html`
-companions are generated by `grove-render` and never hand-edited.
-
-**Every phase runs in a fresh session.** The artifact on disk is the only
-handoff — nothing may live only in chat. See `shared/contract.md` for the full
-artifact format and `shared/gates.md` for gate rules.
+companions are generated by `grove-render` and never hand-edited. See
+`shared/contract.md` for the full artifact format and `shared/gates.md` for
+gate rules.
 
 ## Install
 
@@ -44,9 +72,10 @@ cd grove-skills
 
 This symlinks every `skills/*` folder into `~/.claude/skills/` (read by both
 Claude Code and OpenCode) and every `commands/*.md` into
-`~/.config/opencode/commands/`. It's idempotent and refuses to overwrite any
-existing non-symlink file. Edits in this repo are live immediately — no
-reinstall needed.
+`~/.config/opencode/commands/`. It's idempotent, refuses to overwrite any
+existing non-symlink file, and prunes links to skills this repo no longer
+has (e.g. the removed `grove-plan`). Edits in this repo are live
+immediately — re-run `./install.sh` only when a skill is added or removed.
 
 Use `./install.sh --target opencode-only` to instead symlink skills into
 `~/.config/opencode/skills/` only (Claude Code won't see them).
@@ -77,58 +106,125 @@ Linear tracker, and creates `grove.config.json`, `docs/adr/`, `CONTEXT.md`,
 and a `<!-- grove:start -->...<!-- grove:end -->` block in `AGENTS.md`. It
 never overwrites files that already exist.
 
-## Typical session sequence
+## Running a feature
 
-Start a **fresh session** for every step below:
+### Where sessions run
 
-1. `/grove-questions <ticket-or-idea>` → review `01-questions.md` (2 min)
-2. `/grove-research <slug>` → skim `02-research.md`, correct any wrong facts
-3. `/grove-design <slug>` → work through the grilling loop, one decision at a
-   time → review `03-design.md`
-4. `/grove-approve <slug> design`
-5. `/grove-structure <slug>` → review the slice list → `/grove-approve <slug> structure`
-6. `/grove-plan <slug>` (self-approves once its checks pass)
-7. `/grove-implement <slug>` → review each slice's diff; repeat until done, or
-   pass `--all` to chain slices automatically (still stops on any deviation
-   that touches a one-way decision)
+Every grove session runs **from the target repo's root** — the directory
+holding `grove.config.json`. That includes epics and their children: child
+folders sit flat next to the epic's under `<artifactRoot>/`, so there is no
+per-child directory to `cd` into. Never run grove from inside
+`<artifactRoot>/` or from this skills repo.
 
-**Sizing shortcuts:** if `grove-questions` returns an **S** verdict, it will
-say so and recommend skipping straight to `grove-plan`/`grove-implement`. An
-**L** verdict means the feature should be split into smaller slugs before
-continuing — it will propose the split and wait for your agreement before
-creating any sub-feature folders.
+### Session by session
+
+**`standard`** (the common case):
+
+1. `/grove-start <ticket-or-idea>` — answer the product questions one at a
+   time, confirm the flow. Research runs in subagents while you wait. You
+   get a skim summary of both artifacts and *"Approve now? (yes / not
+   yet)"*. Correct any wrong fact first; "not yet" is fine — design still
+   runs, with a warning.
+2. **Fresh session:** `/grove-design <slug>` — the grilling loop, one
+   one-way decision per turn; then *"Decisions done, now the slices"* and the
+   slice outline, same session. Read both rendered `.html` files, then one
+   approval covers design and structure together (both or neither).
+3. **Fresh session:** `/grove-implement <slug>` — plans slice 1 against the
+   code, checks it against the design, executes, verifies, commits, and stops
+   for your review. Say "continue" for the next slice in the same session,
+   or re-run `/grove-implement <slug>` in a fresh one. `--all` chains slices
+   (still stops on any new decision or failed verification).
+
+**`full`**: the same, except step 2 stops after the design for its own
+approval, and `/grove-structure <slug>` follows — in the same session is
+fine — with its own approval.
+
+**`small`**: `/grove-start <idea>` stops after the questions (no research)
+and asks for approval; then `/grove-implement <slug>` in a fresh session.
+Its gate needs approved questions with an S verdict.
+
+### When a fresh session is needed
+
+| After | Fresh session? | Why |
+|---|---|---|
+| `grove-start` | **yes** | research filled the context with noise the design conversation shouldn't carry |
+| `grove-design` → `grove-structure` (`full`) | no — same session is fine | the design context helps the slices |
+| `grove-design` / `grove-structure` → `grove-implement` | yes | implementation works from the approved files, not the conversation |
+| one slice → the next | no, until it gets heavy | `grove-implement` suggests a fresh session after ~2–3 slices or one big one; resuming from `05-plan.md`'s checkboxes always works |
+
+Nothing ever lives only in chat: every decision is in an artifact before a
+session ends, so any session can be replaced by a fresh one.
+
+### Approving
+
+Every gated skill (`grove-start`, `grove-questions`, `grove-research`,
+`grove-design`, `grove-structure`) ends by running the approval checks and
+asking **"Approve now? (yes / not yet)"**. Only an explicit "yes" or
+"approve" counts — "looks good", feedback, or anything else leaves the
+artifact `draft`. To approve later, after reading the rendered HTML:
+`/grove-approve <slug> <unit>`, where the unit is `questions`, `research`,
+`questions+research`, `design`, `structure`, or `design+structure`.
+
+Approval does the same thing wherever it runs — validation, frontmatter,
+stale marking, ADR flips, epic child creation — because it lives in one
+place, `shared/approve.md`.
+
+### Planning happens inside implement
+
+There is no separate plan phase. `grove-implement` writes the plan for **the
+next slice only**, just before executing it, into `05-plan.md` — against the
+code as it is after the previous slice, so the plan never goes stale while
+earlier slices are built. A subagent may draft it; the implementing session
+checks it against the design (zero-context test, **no new decisions** —
+anything the design didn't decide stops implementation and goes back to
+`grove-design`). The plan is agent-facing and self-checked; you review the
+diff, not the plan.
+
+An older `05-plan.md` written in full up front still works: `grove-implement`
+resumes at the first unticked box and drift-checks each pre-written slice
+against the current code before using it.
+
+### Why there's no orchestrator
+
+There is deliberately no command that runs the whole workflow end to end.
+grove's value is the two judgment points you can't delegate — the design
+decisions and the slice structure — and each needs your full attention in a
+conversation, not a rubber stamp at the end of an automated run. Subagents
+are used only for mechanical work: research fact-gathering and synthesis,
+drafting slice plans, running checks. Never for the design or structure
+conversation. The flows remove stops that didn't need you; the stops that
+remain are the ones that do.
 
 ## Big features: epics
 
 A feature with `kind: epic` runs the same workflow twice, at two zoom
 levels:
 
-- **Epic level:** `grove-questions` → `grove-research` → `grove-design` →
+- **Epic level (always `full` flow):** `grove-start` → `grove-design` →
   `grove-structure` shape the idea, research it broadly, settle only the
   *system-level* decisions (data model/ownership, contracts between
   modules, the main flows, cross-cutting rules — no file trees, no
-  signatures), and split it into child features. `grove-plan` and
-  `grove-implement` refuse to run on an epic — there's nothing to plan or
-  implement at this level.
-- **Child level:** each child (`kind: feature`, `parent: <epic-slug>`) runs
-  the full normal phase sequence, one at a time, **just-in-time** — you
-  don't shape or research every child up front. A child's research and
-  design read the epic's artifacts first and work only the gaps; epic-level
-  decisions (ided `E-D1`, `E-D2`, … in the epic's design) are read-only from
-  inside a child.
+  signatures), and split it into child features. `grove-implement` refuses
+  to run on an epic — there's nothing to implement at this level.
+- **Child level (default `standard` flow):** each child (`kind: feature`,
+  `parent: <epic-slug>`) runs its own flow, one at a time,
+  **just-in-time** — you don't shape or research every child up front. A
+  child's research and design read the epic's artifacts first and work only
+  the gaps; epic-level decisions (ided `E-D1`, `E-D2`, … in the epic's
+  design) are read-only from inside a child.
 
 A normal feature (`kind: feature`, no `parent`) behaves exactly as before —
 nothing above changes if you never use epic mode.
 
 ### Shaping and appetite
 
-`grove-questions` offers epic mode when its size verdict is **L**, as an
-alternative to proposing a plain split. If you take it, it walks you
-through the epic's `feature.md` shaping headings — `## Problem`, `## Who
-it's for`, `## Success looks like`, `## Non-goals`, `## Appetite` — one at a
-time. **Appetite is required** for an epic: a time budget (e.g. "3 weeks")
-that `grove-design` and `grove-structure` check the system design and child
-list against, proposing cuts if the scope has grown past it.
+`grove-questions` offers epic mode when its size verdict is **L**, alongside
+a split or one `full`-flow feature. If you take it, it walks you through the
+epic's `feature.md` shaping headings — `## Problem`, `## Who it's for`,
+`## Success looks like`, `## Non-goals`, `## Appetite` — one at a time.
+**Appetite is required** for an epic: a time budget (e.g. "3 weeks") that
+`grove-design` and `grove-structure` check the system design and child list
+against, proposing cuts if the scope has grown past it.
 
 ### Walking skeleton first
 
@@ -139,11 +235,19 @@ children build on it.
 
 ### Just-in-time children
 
-Don't run `grove-questions` on every child up front. Start child 2 only once
-child 1 is far enough along — `grove-questions` gives a **soft** warning
-(never a block) if an earlier child in the epic's order hasn't reached
-`grove-implement` yet, so you can still jump ahead deliberately (e.g. two
-children with no dependency between them) without a fight.
+Don't start every child up front. Start child 2 only once child 1 is far
+enough along — `grove-start` gives a **soft** warning (never a block) if an
+earlier child in the epic's order hasn't reached `grove-implement` yet, so
+you can still jump ahead deliberately (e.g. two children with no dependency
+between them) without a fight.
+
+### A child that outgrows `standard`
+
+If a child's design needs more one-way decisions than
+`limits.maxOneWayDecisions`, or its structure more slices than
+`limits.maxSlices`, the skill stops and **proposes** two options: switch the
+child to `full`, or escalate a split to the epic's structure. You choose;
+nothing switches automatically.
 
 ### Escalating conflicts back to the epic
 
@@ -166,54 +270,51 @@ never a substitute for the grilling loop deciding what to build for real.
 ### Checking progress
 
 `/grove-epic-status <epic-slug>` is read-only: a table of the epic's
-children (order, stage, artifact statuses, blocking dependencies, next
-action), any stale or conflicting children, and elapsed time against the
-appetite. It never writes anything — an epic's progress is always worked
-out fresh from its children's own files, never duplicated onto the epic.
+children (order, flow, stage, artifact statuses, blocking dependencies,
+next action), any stale or conflicting children, and elapsed time against
+the appetite. It never writes anything — an epic's progress is always
+worked out fresh from its children's own files, never duplicated onto the
+epic.
 
 ### Worked example
 
-Each command below is its own fresh session, same as the normal workflow:
+All from the target repo root; each command is a fresh session unless noted:
 
 ```
-# 1. Shape the epic (run from the target repo root)
-/grove-questions "Replace ad-hoc retry logic with a shared retry queue"
-→ size verdict L → epic mode → feature.md (kind: epic), 01-questions.md
+# 1. Shape and research the epic (full flow)
+/grove-start "Replace ad-hoc retry logic with a shared retry queue"
+→ size L → epic mode → shaping questions → flow full
+→ blind research → skim → "Approve now?" yes
 
-# 2. Epic-level research and design (same repo root)
-/grove-research retry-epic        → 02-research.md
-/grove-design retry-epic          → 03-design.md (E-D1, E-D2, ADRs drafted)
-/grove-approve retry-epic design
+# 2. Epic-level design
+/grove-design 2026-10-05-retry-epic   → 03-design.md (E-D1, E-D2, ADRs drafted) → approve inline
 
-# 3. Split into children (same repo root)
-/grove-structure retry-epic       → 04-structure.md (3 children, walking skeleton first)
-/grove-approve retry-epic structure
-  → creates docs/work/retry-epic-child-1/, -child-2/, -child-3/ (backlog)
+# 3. Split into children (same session as step 2 is fine)
+/grove-structure 2026-10-05-retry-epic → 04-structure.md (3 children, walking skeleton first) → approve inline
+  → creates docs/work/2026-10-05-01-queue-core/, 2026-10-05-02-idempotency/,
+    2026-10-05-03-payments/ (backlog, flow: standard)
 
-# 4. Work child 1 to completion, just like a normal feature
-/grove-questions retry-epic-child-1   → delta questions only, reads the epic's artifacts
-/grove-research retry-epic-child-1
-/grove-design retry-epic-child-1      → opens with Inherited decisions (E-D1, E-D2)
-/grove-approve retry-epic-child-1 design
-/grove-structure retry-epic-child-1
-/grove-approve retry-epic-child-1 structure
-/grove-plan retry-epic-child-1        → self-approves
-/grove-implement retry-epic-child-1   → slice by slice, same as any feature
+# 4. Child 1, standard flow
+/grove-start 2026-10-05-01-queue-core     → delta questions, delta research, skim, approve
+/grove-design 2026-10-05-01-queue-core    → Inherited decisions, own decisions, then the slices
+                                            → one approval for design + structure
+/grove-implement 2026-10-05-01-queue-core → slice by slice
 
 # 5. Check in on the epic any time
-/grove-epic-status retry-epic
+/grove-epic-status 2026-10-05-retry-epic
 
 # 6. Once child 1 is far enough along, start child 2 the same way
-/grove-questions retry-epic-child-2
+/grove-start 2026-10-05-02-idempotency
 ```
 
 ## Feedback and revising an artifact
 
-Every skill that writes an artifact supports revise mode: if the artifact
-already exists, re-run its skill with your feedback as arguments, or leave
-inline markers in the file (`> [!feedback] ...` or `<!-- feedback: ... -->`)
-and re-run with no arguments. The skill reads the existing artifact plus your
-feedback and updates it in place, bumping `version`.
+Review by reading the rendered `.html` (or the markdown). Give feedback in
+the chat, or leave inline markers in the file (`> [!feedback] ...` or
+`<!-- feedback: ... -->`) and re-run the artifact's skill with no arguments.
+Every skill that writes an artifact supports revise mode: it reads the
+existing artifact plus your feedback and updates it in place, bumping
+`version`.
 
 Editing an **approved** artifact resets it to `draft` and marks every
 downstream artifact `stale` — the next skill to touch a stale input will warn
@@ -221,19 +322,20 @@ you and offer to re-read and revise rather than silently using old state.
 
 ## Gates and `--force`
 
-- **Hard gates** (`grove-structure`, `grove-plan`, `grove-implement`) block
-  unless their required upstream artifact is `status: approved`.
+- **Hard gates** block unless their upstream artifacts are approved:
+  `grove-structure` (`full` flow) needs the design; `grove-implement` needs,
+  by flow — `full`: the structure; `standard`: design and structure;
+  `small`: the questions, with an S verdict.
 - **Soft gates** (`grove-research`, `grove-design`) warn but proceed if their
   input hasn't been explicitly approved.
-- **Content gates** always apply, regardless of approval status: no empty
-  `## Open questions` section, no `TODO`/`TBD`, every structure slice has a
-  verification step.
+- **Content gates** always apply, regardless of approval status: no content
+  under `## Open questions`, no `TODO`/`TBD`, every structure slice has a
+  verification step, every one-way decision has a chosen option.
 - Any gate can be bypassed with an explicit `--force <reason>`, which is
   recorded in the artifact's `forced` frontmatter array. Approval itself
-  (`grove-approve`) always requires an explicit "yes" regardless of `--force`.
+  always requires an explicit "yes" regardless of `--force`.
 
-Full rules: `shared/gates.md` (copied into every skill's `references/gates.md`
-— run `scripts/sync-shared.sh` after editing the source and before committing).
+Full rules: `shared/gates.md`, `shared/approve.md`.
 
 ## Iterating the HTML template
 
@@ -247,17 +349,26 @@ regeneratable from the markdown, never hand-maintained.
 
 ```
 grove-skills/
-├── shared/              # single source of truth: contract.md, gates.md, config.schema.json
+├── shared/              # single source of truth, copied into skills' references/
+│   ├── MANIFEST         # which shared file goes into which skills
+│   ├── contract.md, gates.md, config.schema.json
+│   ├── approve.md       # the one approval procedure (inline + grove-approve)
+│   ├── research-process.md   # grove-start + grove-research
+│   └── structure-process.md  # grove-design + grove-structure
 ├── scripts/
-│   ├── sync-shared.sh   # copies shared/*.md into every skill's references/
-│   └── validate.sh      # lints skills (see below)
+│   ├── sync-shared.sh   # copies shared/ files per MANIFEST
+│   ├── validate.sh      # lints skills (see below), then runs the fixture checks
+│   └── validate-fixtures.sh  # flow, gate, approval, and resume checks over tests/fixtures/
 ├── skills/grove-*/       # SKILL.md + references/ (+ assets/ for grove-render)
 ├── commands/grove-*.md   # OpenCode slash-command wrappers
+├── tests/fixtures/       # hand-written artifact trees (epics, one feature per flow)
 ├── install.sh / uninstall.sh
 └── README.md
 ```
 
-Run `./scripts/validate.sh` before committing any change to `skills/` —
-it checks every `SKILL.md` has a valid `name`/`description`, only allowed
-frontmatter fields, in-sync `references/` copies, a matching command wrapper,
-and no mention of third-party skills.
+Run `./scripts/sync-shared.sh` after editing anything in `shared/`, then
+`./scripts/validate.sh` before committing. It checks every `SKILL.md` has a
+valid `name`/`description`, only allowed frontmatter fields, in-sync
+`references/` copies, a matching command wrapper, the inline approval step
+in every gated skill, no mention of third-party skills or Plannotator, no
+reference to the removed `grove-plan`, and then runs the fixture checks.
