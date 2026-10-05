@@ -31,9 +31,10 @@ without `kind` count as features) or `kind: epic`.
   `parent` and never nest: an epic's children are always `kind: feature`,
   flat.
 - An epic runs **Questions → Research → Design → Structure** only, at
-  *system level*. `grove-plan` and `grove-implement` refuse to run on a
-  `kind: epic` feature — see each skill's own doc.
-- A child (`parent` set) runs the full normal phase sequence. It is a
+  *system level*, always in `full` flow. `grove-implement` refuses to run on
+  a `kind: epic` feature — see its own doc.
+- A child (`parent` set) runs the normal phases in its own flow (default
+  `standard`). It is a
   `kind: feature` feature in every other respect: same files, same gates,
   same approval mechanics. The only differences are that its research and
   design read the epic's artifacts first and work only on the gaps (see
@@ -44,17 +45,68 @@ without `kind` count as features) or `kind: epic`.
   its children by slug only (`children:`); an epic's progress is always
   worked out by reading the children's own files (see `grove-epic-status`).
 
+## Flows
+
+Every feature runs in one of three flows, recorded as `flow` in
+`feature.md`. The flow decides which sessions run and where the human stops;
+the artifacts and their format are the same in every flow.
+
+| Flow | Sessions (each a fresh session) | Human stops |
+|---|---|---|
+| `full` | `grove-start` → `grove-design` → `grove-structure` → `grove-implement` | start (skim) → design → structure → each slice |
+| `standard` | `grove-start` → `grove-design` (writes design **and** structure) → `grove-implement` | start (skim) → design + structure (one review) → each slice |
+| `small` | `grove-start` (questions only) → `grove-implement` | questions → each slice |
+
+An epic is always `full` and stops after structure: its implementation
+happens in its children.
+
+**Proposed flow.** `grove-questions` proposes a flow from its size verdict
+and the human confirms or changes it:
+
+| Situation | Proposed flow |
+|---|---|
+| epic (`kind: epic`) | `full` |
+| child of an epic (`parent` set) | `standard` |
+| size S | `small` |
+| size M | `standard` |
+| size L, not an epic | `full` |
+
+**Missing `flow`.** A `feature.md` without `flow` (or a feature with no
+`feature.md` at all, from before it existed) is treated as `full` — the
+behaviour every feature had before flows existed.
+
+### Changing the flow
+
+The human may change the flow at any time by asking; a skill may only
+*propose* a change (e.g. `grove-implement` in `small` flow hitting a one-way
+decision, or an epic child outgrowing `standard`). On a change, the skill
+writes the new `flow` to `feature.md` and appends one line to its
+`## Flow log` body section (create the heading at the end of the body if
+missing):
+
+```markdown
+## Flow log
+
+- 2026-10-05: standard (proposed from size M, confirmed)
+- 2026-10-09: standard → full — child needs 10 slices; human chose full over a split
+```
+
+Changing the flow never changes any artifact's `status` by itself. It only
+changes which gates apply next (`references/gates.md`) — e.g. switching
+`small` → `standard` means `grove-start`'s research, `grove-design`, and the
+combined approval now come before `grove-implement` can continue.
+
 ## Files per feature
 
 | File | Written by | Human review |
 |---|---|---|
-| `feature.md` | grove-questions (approve updates it for epics) | — (identity, not reviewed) |
-| `00-ticket.md` | grove-questions | — (source snapshot) |
-| `01-questions.md` | grove-questions | 2 min |
-| `02-research.md` (+ `.html`) | grove-research | skim, correct facts |
-| `03-design.md` (+ `.html`) | grove-design | careful, ≤ ~200 lines |
-| `04-structure.md` (+ `.html`) | grove-structure | careful, ≤ ~2 pages |
-| `05-plan.md` | grove-plan | light (epics: not produced) |
+| `feature.md` | grove-questions (approval updates it for epics; flow changes append to `## Flow log`) | — (identity, not reviewed) |
+| `00-ticket.md` | grove-questions (also via grove-start) | — (source snapshot) |
+| `01-questions.md` | grove-questions (also via grove-start) | 2 min |
+| `02-research.md` (+ `.html`) | grove-research, or grove-start via blind subagents (not in `small` flow) | skim, correct facts |
+| `03-design.md` (+ `.html`) | grove-design (not in `small` flow) | careful, ≤ ~200 lines |
+| `04-structure.md` (+ `.html`) | grove-structure (`full`); grove-design (`standard`) (not in `small` flow) | careful, ≤ ~2 pages |
+| `05-plan.md` | grove-implement, one slice at a time, just before executing it | none — agent-facing, self-checked (epics: not produced) |
 | `06-implementation.md` | grove-implement | per slice (epics: not produced) |
 
 `.html` companions are generated only by `grove-render` and are never hand-edited.
@@ -74,9 +126,14 @@ parent: ""                # feature only, child of an epic: the epic's slug
 children: []               # epic only: ordered list of child slugs, written by grove-approve
 appetite: ""               # epic: required. feature: optional free-text time budget
 order: 0                   # child only: position in the epic's order (1 = walking skeleton)
+flow: standard             # full | standard | small (missing = full); see "Flows"
 created: 2026-10-04
 ---
 ```
+
+`flow` is the one field that changes after creation without an approval:
+see "Changing the flow". Every change is logged in the body's
+`## Flow log`.
 
 Existing features created before this field existed have no `feature.md`;
 treat a missing file as `kind: feature`, no `parent`.
@@ -110,6 +167,28 @@ repo_heads:              # 02-research.md only: VCS ref(s) read, e.g. git rev-pa
   - abc1234
 ---
 ```
+
+## `05-plan.md`: one slice at a time
+
+`grove-implement` writes the plan for **the next slice only**, just before
+executing it, against the code as it is after the previous slice. The file
+keeps the same frontmatter and grows by one `## Slice N — <outcome>`
+section per slice, in order:
+
+- Each section's steps are checkboxes (`- [ ]` / `- [x]`), ticked as they
+  complete — this is what makes resuming from the file work in any session.
+- `based_on` lists what the latest section was planned against:
+  `03-design.md@<v>` and `04-structure.md@<v>` (`small` flow:
+  `01-questions.md@<v>`). It is updated each time a section is added.
+- `status: approved` is set by `grove-implement` itself once a section passes
+  the self-checks (zero-context test, no new decisions, verification command
+  present, no `TODO`/`TBD`), with a note in the body that this approval is
+  automatic — the plan is mechanical once design and structure are locked.
+  The plan is never shown to the human for approval.
+- **Legacy plans.** A `05-plan.md` written in full up front (before this
+  rule) stays valid: a slice that already has a section is reused after a
+  drift check against the current code, and re-planned in place only if it
+  drifted (see `grove-implement`).
 
 ## Decision ids
 
@@ -160,6 +239,10 @@ stable cross-file reference.
 6. **Open questions.** Every artifact ends with a `## Open questions` heading.
    It must be empty for the artifact to be approved.
 7. **No placeholders in approved artifacts.** `TODO` and `TBD` block approval.
+8. **Approval has one implementation.** Everything approval does —
+   validation, frontmatter, stale marking, ADR flips, epic child creation —
+   lives in `shared/approve.md` (each skill's `references/approve.md`), used
+   both inline at the end of a gated skill and by `grove-approve`.
 
 ## Per-repo config
 

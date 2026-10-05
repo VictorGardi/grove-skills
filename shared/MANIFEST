@@ -1,0 +1,9 @@
+# Which shared/ file is copied into which skills' references/ folder.
+# Format: <file> <skill>... ("*" means every skill). Read by
+# scripts/sync-shared.sh (copies) and scripts/validate.sh (checks in sync).
+contract.md *
+gates.md *
+config.schema.json grove-setup
+approve.md grove-approve grove-start grove-questions grove-research grove-design grove-structure
+research-process.md grove-start grove-research
+structure-process.md grove-design grove-structure
