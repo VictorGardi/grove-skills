@@ -370,5 +370,5 @@ Run `./scripts/sync-shared.sh` after editing anything in `shared/`, then
 `./scripts/validate.sh` before committing. It checks every `SKILL.md` has a
 valid `name`/`description`, only allowed frontmatter fields, in-sync
 `references/` copies, a matching command wrapper, the inline approval step
-in every gated skill, no mention of third-party skills or Plannotator, no
+in every gated skill, no mention of third-party skills or external review tools, no
 reference to the removed `grove-plan`, and then runs the fixture checks.
