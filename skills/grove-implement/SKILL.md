@@ -26,6 +26,11 @@ specified, stopping for human review after each slice.
 
 ## Preconditions & gates
 
+**Epic gate (always refuses, no `--force`):** if `feature.md` has
+`kind: epic`, refuse to run. Tell the human which child to work on next (the
+lowest-`order` child not yet past `grove-questions`, per `references/gates.md`).
+An epic has no slices of its own to implement — only its children do.
+
 **Hard gate:** both `04-structure.md` and `05-plan.md` must be
 `status: approved`. If not, stop and name which one isn't, unless
 `--force <reason>` is given — record in `forced`.
