@@ -20,6 +20,11 @@ set of skills, written to the open Agent Skills standard (folder per skill,
 | 6 | `grove-implement` | `06-implementation.md` + commits | **hard: structure + plan approved** | per slice |
 | — | `grove-approve` | sets `status: approved` | — | explicit "yes", every time |
 | — | `grove-render` | `*.html` companions | — | n/a (pure presentation) |
+| — | `grove-spike` | finding in `02-research.md`'s `## Spikes` | — | n/a (code always deleted) |
+| — | `grove-epic-status` | read-only report | — | n/a (nothing written) |
+
+An epic (`kind: epic`) runs phases 1–4 only, at system level, and splits
+into child features instead of slices — see **Big features: epics** below.
 
 Artifacts live in the target repo at `<artifactRoot>/<feature-slug>/`
 (default `artifactRoot`: `docs/work`). Markdown is canonical; `.html`
@@ -92,6 +97,115 @@ say so and recommend skipping straight to `grove-plan`/`grove-implement`. An
 **L** verdict means the feature should be split into smaller slugs before
 continuing — it will propose the split and wait for your agreement before
 creating any sub-feature folders.
+
+## Big features: epics
+
+A feature with `kind: epic` runs the same workflow twice, at two zoom
+levels:
+
+- **Epic level:** `grove-questions` → `grove-research` → `grove-design` →
+  `grove-structure` shape the idea, research it broadly, settle only the
+  *system-level* decisions (data model/ownership, contracts between
+  modules, the main flows, cross-cutting rules — no file trees, no
+  signatures), and split it into child features. `grove-plan` and
+  `grove-implement` refuse to run on an epic — there's nothing to plan or
+  implement at this level.
+- **Child level:** each child (`kind: feature`, `parent: <epic-slug>`) runs
+  the full normal phase sequence, one at a time, **just-in-time** — you
+  don't shape or research every child up front. A child's research and
+  design read the epic's artifacts first and work only the gaps; epic-level
+  decisions (ided `E-D1`, `E-D2`, … in the epic's design) are read-only from
+  inside a child.
+
+A normal feature (`kind: feature`, no `parent`) behaves exactly as before —
+nothing above changes if you never use epic mode.
+
+### Shaping and appetite
+
+`grove-questions` offers epic mode when its size verdict is **L**, as an
+alternative to proposing a plain split. If you take it, it walks you
+through the epic's `feature.md` shaping headings — `## Problem`, `## Who
+it's for`, `## Success looks like`, `## Non-goals`, `## Appetite` — one at a
+time. **Appetite is required** for an epic: a time budget (e.g. "3 weeks")
+that `grove-design` and `grove-structure` check the system design and child
+list against, proposing cuts if the scope has grown past it.
+
+### Walking skeleton first
+
+`grove-structure`'s epic mode always makes child 1 the **walking
+skeleton**: the thinnest end-to-end slice of the whole epic. Build it first
+— it's what proves the system design actually works before the remaining
+children build on it.
+
+### Just-in-time children
+
+Don't run `grove-questions` on every child up front. Start child 2 only once
+child 1 is far enough along — `grove-questions` gives a **soft** warning
+(never a block) if an earlier child in the epic's order hasn't reached
+`grove-implement` yet, so you can still jump ahead deliberately (e.g. two
+children with no dependency between them) without a fight.
+
+### Escalating conflicts back to the epic
+
+A child never silently overrides an epic decision. If a child's research or
+design finds that an `E-D` decision is wrong or missing, it stops: the issue
+goes into the epic's `03-design.md` `## Open questions`, the epic design
+drops back to `draft`, and re-approving the fix marks only the children
+whose scope actually depends on that decision `stale` (not every child —
+see `shared/gates.md`'s targeted stale marking).
+
+### When to spike
+
+Reach for `/grove-spike` when a research or design question needs code run
+to answer, not just code read — "does this library actually do X", "is this
+approach even feasible". It prototypes in a scratch worktree on branch
+`spike/<slug>-<name>`, writes the finding into the target `02-research.md`'s
+`## Spikes` section, and is always deleted afterward — never merged, and
+never a substitute for the grilling loop deciding what to build for real.
+
+### Checking progress
+
+`/grove-epic-status <epic-slug>` is read-only: a table of the epic's
+children (order, stage, artifact statuses, blocking dependencies, next
+action), any stale or conflicting children, and elapsed time against the
+appetite. It never writes anything — an epic's progress is always worked
+out fresh from its children's own files, never duplicated onto the epic.
+
+### Worked example
+
+Each command below is its own fresh session, same as the normal workflow:
+
+```
+# 1. Shape the epic (run from the target repo root)
+/grove-questions "Replace ad-hoc retry logic with a shared retry queue"
+→ size verdict L → epic mode → feature.md (kind: epic), 01-questions.md
+
+# 2. Epic-level research and design (same repo root)
+/grove-research retry-epic        → 02-research.md
+/grove-design retry-epic          → 03-design.md (E-D1, E-D2, ADRs drafted)
+/grove-approve retry-epic design
+
+# 3. Split into children (same repo root)
+/grove-structure retry-epic       → 04-structure.md (3 children, walking skeleton first)
+/grove-approve retry-epic structure
+  → creates docs/work/retry-epic-child-1/, -child-2/, -child-3/ (backlog)
+
+# 4. Work child 1 to completion, just like a normal feature
+/grove-questions retry-epic-child-1   → delta questions only, reads the epic's artifacts
+/grove-research retry-epic-child-1
+/grove-design retry-epic-child-1      → opens with Inherited decisions (E-D1, E-D2)
+/grove-approve retry-epic-child-1 design
+/grove-structure retry-epic-child-1
+/grove-approve retry-epic-child-1 structure
+/grove-plan retry-epic-child-1        → self-approves
+/grove-implement retry-epic-child-1   → slice by slice, same as any feature
+
+# 5. Check in on the epic any time
+/grove-epic-status retry-epic
+
+# 6. Once child 1 is far enough along, start child 2 the same way
+/grove-questions retry-epic-child-2
+```
 
 ## Feedback and revising an artifact
 
