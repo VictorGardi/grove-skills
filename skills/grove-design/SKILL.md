@@ -1,6 +1,6 @@
 ---
 name: grove-design
-description: Decide where a feature is going, surfacing every one-way-door decision for explicit human choice with full sight of consequences (phase 3 of the grove workflow). Load when the human wants to run the design phase on a feature with existing research, or to grill them on a design.
+description: Decide where a feature is going, surfacing every one-way-door decision for explicit human choice with full sight of consequences (phase 3 of the grove workflow); in standard flow it continues in the same session to outline the slices, for one combined review. Load when the human wants to run the design phase on a feature with existing research, or to grill them on a design.
 license: MIT
 ---
 
@@ -12,18 +12,28 @@ Phase 3 of grove. Decide **where we're going**: the desired end state, every
 one-way-door decision made explicitly by the human with real trade-offs shown,
 and two-way-door decisions made by the agent and shown for a one-pass veto.
 
+In **`standard` flow** (`feature.md` `flow`), the same session then outlines
+the slices (`04-structure.md`) and ends with one combined review and one
+approval covering both files. In **`full` flow** and for epics, it stops
+after the design.
+
 ## When to use / not use
 
 - Use after `02-research.md` exists (soft gate — see Preconditions).
 - Use again in revise mode: if `03-design.md` exists, read it plus feedback
   and update the affected sections rather than restarting the whole grill.
-- Do not use to plan file-by-file steps — that's `grove-structure`/`grove-plan`.
+- Do not use to plan file-by-file steps — that's `grove-implement`.
+- Not part of `small` flow. If `flow: small`, say so and offer to switch to
+  `standard` (logged in `feature.md`'s `## Flow log`), which also needs
+  research first.
 
 ## Inputs
 
-`feature.md`, `00-ticket.md`, `01-questions.md`, `02-research.md`,
-`CONTEXT.md`, ADRs, `grove.config.json` (for `limits.maxOneWayDecisions`,
-`limits.epicMaxOneWayDecisions`, and `limits.designMaxLines`).
+`feature.md` (`kind`, `parent`, `flow`, `appetite`), `00-ticket.md`,
+`01-questions.md`, `02-research.md`, `CONTEXT.md`, ADRs, `grove.config.json`
+(for `limits.maxOneWayDecisions`, `limits.epicMaxOneWayDecisions`,
+`limits.designMaxLines`, and — in `standard` flow — `limits.maxSlices` and
+`commands.*`).
 
 Child mode (`feature.md` has `parent` set): also the epic's `03-design.md`
 and its `04-structure.md` entry for this child.
@@ -32,7 +42,7 @@ and its `04-structure.md` entry for this child.
 
 Soft gate: if `02-research.md` is not `status: approved`, warn and proceed. If
 `02-research.md` doesn't exist, stop and tell the human to run `grove-research`
-first (or, for an S-sized feature, confirm they want to skip straight here).
+first (`grove-start`, or `grove-research` if questions already exist).
 
 ## Process
 
@@ -71,10 +81,9 @@ first (or, for an S-sized feature, confirm they want to skip straight here).
    - Render (step 8) shows a system diagram plus a child-map *preview* (the
      likely children, not yet the formal list — that's `grove-structure`'s
      job), never a file tree.
-   - End-of-session next command is `grove-approve <slug> design`, same as
-     normal, but tell the human the next *skill* after approval is
-     `grove-structure` in epic mode (it will produce child features, not
-     slices).
+   - An epic is always `full` flow: the session ends after the design's
+     inline approval, and the next skill is `grove-structure` in epic mode
+     (it will produce child features, not slices).
 
 1. **Desired state.** Write 5–10 lines describing the end result. Confirm
    with the human before continuing.
@@ -88,7 +97,10 @@ first (or, for an S-sized feature, confirm they want to skip straight here).
    Order by dependency (system design before program design). Show the human
    the full map before asking about any single decision. If one-way doors
    exceed `limits.maxOneWayDecisions` (or, in epic mode, `limits.epicMaxOneWayDecisions`),
-   stop and propose a split instead of proceeding.
+   stop and propose a split instead of proceeding. For an **epic child**,
+   propose the two options — switch this child to `full` flow, or escalate a
+   split to the epic's structure — and let the human choose; never switch on
+   your own. Log the choice and reason in `feature.md`'s `## Flow log`.
 3. **Two-way doors.** Decide these yourself, guided by `## Existing patterns
    to reuse` from research. Present as a table for a single-pass veto; don't
    grill on these individually.
@@ -131,6 +143,24 @@ first (or, for an S-sized feature, confirm they want to skip straight here).
    side by side, a decision card per one-way decision (all options, chosen
    one highlighted), and the file-tree diff (epic mode: system diagram + child
    map preview instead of a file-tree diff, per step 0e).
+9. **`standard` flow only — the slices.** Say *"Decisions done, now the
+   slices"* and follow `references/structure-process.md` in this same
+   session, against the `03-design.md` just written: outline, review with
+   the human, write `04-structure.md`, render `04-structure.html`. If the
+   structure step finds the design must change, update `03-design.md` first
+   (it's still `draft`) and keep both consistent.
+10. **Summary.** `full`/epic: the design summary. `standard`: one combined
+   summary — the one-way decisions with their chosen options, the two-way
+   table's notable entries, the slice list (outcome + verification, one line
+   each), and for an epic child an **appetite check**: does the slice list
+   fit the size the epic's structure gave this child, and the epic's
+   appetite? Give the paths to both `.html` files.
+11. **Inline approval.** Follow `references/approve.md`: unit `design` in
+   `full` flow and for epics; unit `design+structure` in `standard` flow —
+   atomic, both or neither. Ask *"Approve now? (yes / not yet)"*. Only an
+   explicit yes approves. On "not yet" with feedback, revise the affected
+   file(s) here and ask again; never approve the design alone in `standard`
+   flow.
 
 ## Output
 
@@ -143,8 +173,8 @@ entries.
   split before asking a single grilling question.
 - Child mode: stop immediately on an escalation per step 0c — never decide
   around a missing or conflicting epic decision.
-- Stop and tell the human to review + run `grove-approve <slug> design` once
-  the artifact is written. Never self-approve.
+- Stop at the inline approval (step 11). Never approve without the human's
+  explicit yes; on "not yet", the artifacts stay `draft`.
 
 ## Rules
 
@@ -156,8 +186,15 @@ entries.
 - Editing an approved `03-design.md` resets it to `draft` and marks
   `04-structure.md` onward `stale` (per `references/contract.md`) — warn the
   human this will happen before making the edit if the design is approved.
+  In `standard` flow, revise the structure to match in the same session and
+  re-approve as `design+structure`.
   Epic mode: re-approving a changed design triggers *targeted* stale marking
   on children per `references/gates.md`, not wholesale.
-- End the session telling the human: the artifact path (and `.html`), to
-  review carefully (it's short by design), the exact next command
-  (`grove-approve <slug> design`), and to start a fresh session.
+- No subagents for the design or structure conversation — it stays in this
+  session with the human.
+- End the session telling the human: the artifact path(s) (and `.html`),
+  the approval state, and the exact next command:
+  - `full` flow / epic, approved: `grove-structure <slug>` — continuing in
+    this same session is fine (the design context helps the slices).
+  - `standard` flow, approved: `grove-implement <slug>`, in a fresh session.
+  - not approved yet: `grove-approve <slug> <unit>` once they're happy.
