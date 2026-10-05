@@ -9,6 +9,9 @@ fail=0
 
 name_regex='^[a-z0-9]+(-[a-z0-9]+)*$'
 allowed_fields='name description license compatibility metadata disable-model-invocation'
+# Skills that must end with the inline approval step (grove-approve is the
+# standalone form of the same procedure).
+gated_skills='grove-start grove-questions grove-research grove-design grove-structure grove-approve'
 
 err() { echo "FAIL: $1"; fail=1; }
 
@@ -56,15 +59,10 @@ for skill_dir in "$skills_dir"/*/; do
     fi
   done <<< "$frontmatter"
 
-  # references/ in sync with shared/.
-  for f in contract.md gates.md; do
-    if ! diff -q "$repo_root/shared/$f" "$skill_dir/references/$f" >/dev/null 2>&1; then
-      err "$skill_name: references/$f out of sync with shared/$f (run scripts/sync-shared.sh)"
-    fi
-  done
-  if [[ "$skill_name" == "grove-setup" ]]; then
-    if ! diff -q "$repo_root/shared/config.schema.json" "$skill_dir/references/config.schema.json" >/dev/null 2>&1; then
-      err "$skill_name: references/config.schema.json out of sync with shared/config.schema.json (run scripts/sync-shared.sh)"
+  # gated skills end with the inline approval step from shared/approve.md.
+  if echo " $gated_skills " | grep -q " $skill_name "; then
+    if ! grep -q 'references/approve.md' "$skill_md" || ! grep -q 'Approve now? (yes / not yet)' "$skill_md"; then
+      err "$skill_name: gated skill lacks the inline approval step (references/approve.md + \"Approve now? (yes / not yet)\")"
     fi
   fi
 
@@ -78,6 +76,31 @@ for skill_dir in "$skills_dir"/*/; do
     err "$skill_name: mentions a third-party skill"
   fi
 done
+
+# references/ copies in sync with shared/, per shared/MANIFEST.
+while read -r file skills; do
+  [[ -z "$file" || "$file" == \#* ]] && continue
+  [[ -f "$repo_root/shared/$file" ]] || { err "shared/MANIFEST lists missing shared/$file"; continue; }
+  if [[ "$skills" == "*" ]]; then
+    skills="$(cd "$skills_dir" && ls -d */ | tr -d /)"
+  fi
+  for skill in $skills; do
+    [[ -d "$skills_dir/$skill" ]] || { err "shared/MANIFEST lists unknown skill '$skill'"; continue; }
+    if ! diff -q "$repo_root/shared/$file" "$skills_dir/$skill/references/$file" >/dev/null 2>&1; then
+      err "$skill: references/$file out of sync with shared/$file (run scripts/sync-shared.sh)"
+    fi
+  done
+done < "$repo_root/shared/MANIFEST"
+
+# No Plannotator anywhere: reviewing means reading the rendered artifact.
+if hits="$(grep -rli 'plannotator' "$skills_dir" "$commands_dir" "$repo_root/shared" "$repo_root/README.md" "$repo_root/docs" 2>/dev/null)" && [[ -n "$hits" ]]; then
+  err "mentions Plannotator: $(echo $hits)"
+fi
+
+# grove-plan was removed; nothing may point at it.
+if hits="$(grep -rl 'grove-plan' "$skills_dir" "$commands_dir" "$repo_root/shared" 2>/dev/null)" && [[ -n "$hits" ]]; then
+  err "references the removed grove-plan skill: $(echo $hits)"
+fi
 
 if ! bash "$repo_root/scripts/validate-fixtures.sh"; then
   fail=1

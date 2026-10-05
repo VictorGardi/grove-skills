@@ -114,8 +114,8 @@ whether to continue anyway — never block (`references/gates.md`).
    on revise).
 7. **Inline approval** — skip this when running inside `grove-start` (it
    approves at its own end). Otherwise follow `references/approve.md` for the
-   `questions` unit: validate, summarise, ask *"Approve now? (yes / not
-   yet)"*. Only an explicit yes approves. In `small` flow approval is a hard
+   `questions` unit: validate, summarise, ask
+   *"Approve now? (yes / not yet)"*. Only an explicit yes approves. In `small` flow approval is a hard
    gate for `grove-implement`; otherwise it's optional (research's soft gate).
 
 ## Output
