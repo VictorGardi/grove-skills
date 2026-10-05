@@ -62,6 +62,11 @@ for skill_dir in "$skills_dir"/*/; do
       err "$skill_name: references/$f out of sync with shared/$f (run scripts/sync-shared.sh)"
     fi
   done
+  if [[ "$skill_name" == "grove-setup" ]]; then
+    if ! diff -q "$repo_root/shared/config.schema.json" "$skill_dir/references/config.schema.json" >/dev/null 2>&1; then
+      err "$skill_name: references/config.schema.json out of sync with shared/config.schema.json (run scripts/sync-shared.sh)"
+    fi
+  fi
 
   # matching command wrapper
   if [[ ! -f "$commands_dir/$skill_name.md" ]]; then

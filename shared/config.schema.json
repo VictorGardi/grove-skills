@@ -61,7 +61,9 @@
       "properties": {
         "maxOneWayDecisions": { "type": "integer", "default": 8 },
         "maxSlices": { "type": "integer", "default": 8 },
-        "designMaxLines": { "type": "integer", "default": 220 }
+        "designMaxLines": { "type": "integer", "default": 220 },
+        "epicMaxOneWayDecisions": { "type": "integer", "default": 10 },
+        "epicMaxChildren": { "type": "integer", "default": 8 }
       }
     }
   }

@@ -1,0 +1,18 @@
+{
+  "artifactRoot": "docs/work",
+  "adrDir": "docs/adr",
+  "contextFile": "CONTEXT.md",
+  "commitHtml": false,
+  "tracker": { "type": "none" },
+  "commands": {
+    "lint": "bash scripts/validate.sh",
+    "build": "bash scripts/sync-shared.sh"
+  },
+  "limits": {
+    "maxOneWayDecisions": 8,
+    "maxSlices": 8,
+    "designMaxLines": 220,
+    "epicMaxOneWayDecisions": 10,
+    "epicMaxChildren": 8
+  }
+}
