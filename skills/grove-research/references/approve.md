@@ -101,7 +101,9 @@ Rules:
      `references/contract.md`; fix the slug if the structure entry lacks it),
      with frontmatter `kind: feature`, `parent: <epic-slug>`, `order`,
      `flow: standard`, `created`, and a body stating the child's goal,
-     outcome, scope, and dependencies from the structure entry. The child
+     outcome, scope, and dependencies from the structure entry, ending with
+     `## Flow log` and the line `- <today>: standard (default for an epic
+     child)` — the child's `grove-start` confirms or changes it. The child
      starts in the backlog (no `01-questions.md`). Write the slugs, in order,
      into the epic's `feature.md` `children:` list.
    - **Re-approval after a revision:** create folders only for children newly
