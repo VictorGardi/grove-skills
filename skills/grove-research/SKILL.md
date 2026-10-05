@@ -1,6 +1,6 @@
 ---
 name: grove-research
-description: Document how the system works today, facts only, answering the research questions from the grove-questions phase (phase 2 of the grove workflow). Load when the human wants to run the research phase on an existing feature's 01-questions.md.
+description: Document how the system works today, facts only, answering the research questions from the grove-questions phase (phase 2 of the grove workflow; grove-start normally runs it for you). Load when the human wants to run or revise only the research phase on an existing feature's 01-questions.md.
 license: MIT
 ---
 
@@ -14,9 +14,11 @@ recommendations.
 
 ## When to use / not use
 
-- Use after `01-questions.md` exists for a feature slug.
-- Use again in revise mode if `02-research.md` already exists and the human
-  has corrections (they review for factual accuracy, not opinions).
+- `grove-start` normally runs this phase for you, right after questions. Use
+  this skill directly when `01-questions.md` exists but research doesn't
+  (e.g. `grove-start` had no subagent tool, or a feature switched from
+  `small` to `standard`), or in revise mode when `02-research.md` exists and
+  the human has factual corrections.
 - Do not use to evaluate or propose solutions — that's `grove-design`.
 
 ## Inputs
@@ -29,59 +31,22 @@ recommendations.
 
 Soft gate: if `01-questions.md` is not `status: approved`, warn and proceed
 (per `references/gates.md`). If `01-questions.md` doesn't exist, stop and
-tell the human to run `grove-questions` first.
-
-Child mode: if the epic's `02-research.md` version has moved past what this
-feature's prior `02-research.md` (if any) recorded as `parent:02-research.md@`,
-warn about staleness and offer to re-read before continuing (same rule as
-any other `based_on` entry, per `references/gates.md`).
+tell the human to run `grove-start` first.
 
 ## Blindness rule
 
-**Never read `00-ticket.md` or the `## Goal` section of `01-questions.md`, and
-never call the tracker.** Pass only the literal question text to any
-subagents. This is deliberate: research must not be biased toward the
-ticket's assumed solution. If a subagent's output references the ticket or
-a proposed solution, discard and re-run it with just the question text.
+**Never read `00-ticket.md`, the `## Goal` section of `01-questions.md`, or
+`feature.md`'s body, and never call the tracker.** This session stays blind,
+so it writes the synthesis itself. Full rule: `references/research-process.md`.
 
 ## Process
 
-1. Read `## Research questions` from `01-questions.md`, `CONTEXT.md`, and ADR
-   titles/content relevant to the area. Child mode: also read the epic's
-   `02-research.md` in full before doing anything else.
-2. **Group questions into 2–5 clusters** by area of the system. Run one
-   subagent per cluster (use the environment's subagent/task tool; fall back
-   to doing clusters sequentially yourself if none is available). Give each
-   subagent only its cluster's question text, `CONTEXT.md`, and instructions
-   to cite `path:line` for every claim and write "Could not determine" rather
-   than guess — never "should" or proposed designs. Child mode: also tell
-   each subagent what the epic research already established for its area, so
-   it answers only the gap, and to re-check (not re-ask) any fact the child
-   relies on if the repo has moved since the epic's `repo_heads`.
-3. Synthesize the subagent answers into `02-research.md` (≤ ~300 lines):
-   - `## Summary` (≤ 10 lines)
-   - Child mode only: `## Inherited from epic` — a short list of the epic
-     research sections this child relies on (by heading), before the new
-     findings below.
-   - `## Answers` — one subsection per research question (child mode: delta
-     questions only), each claim cited `path:line`
-   - `## Current architecture` — a Mermaid diagram of the components, data
-     flow, and boundaries involved
-   - `## Existing patterns to reuse` — how similar problems are already
-     solved in this codebase
-   - `## Constraints & invariants`
-   - `## Test landscape` — what covers this area today and how to run it
-   - `## Relevant ADRs`
-   - `## Unknowns`
-   - `## Spikes` (optional — only present once `grove-spike` has added a
-     finding; never written by this skill itself)
-   - `## Open questions`
-4. Set frontmatter: `phase: research`, `based_on: ["01-questions.md@<version read>"]`
-   (child mode: also append `"parent:02-research.md@<epic version read>"`).
-   Record `repo_heads` (the VCS ref(s) read, e.g. `git rev-parse HEAD` per
-   repo) in both epic and child research — this is what a later child uses to
-   decide whether to re-check a fact rather than trust it blindly.
-5. Invoke `grove-render` on `02-research.md` to produce `02-research.html`.
+1. Follow `references/research-process.md` (inputs, clusters and
+   subagents, synthesis into `02-research.md`, checks, render).
+2. **Inline approval.** Follow `references/approve.md` for the `research`
+   unit: validate, summarise, ask *"Approve now? (yes / not yet)"*. Only an
+   explicit yes approves; anything else leaves it `draft` (design's gate on
+   research is soft).
 
 ## Output
 
@@ -89,16 +54,11 @@ a proposed solution, discard and re-run it with just the question text.
 
 ## Stop conditions
 
-- Stop and warn if `01-questions.md`'s version is newer than any prior
-  `based_on` recorded in an earlier research draft (staleness, per
-  `references/gates.md`).
-- Never fabricate an answer — "Could not determine" plus what would resolve it
-  belongs in `## Unknowns`, not a guess.
+Those in `references/research-process.md` (staleness, never fabricating).
 
 ## Rules
 
-- Zero recommendations anywhere in this artifact. If a sentence contains
-  "should", "we could", or similar, rewrite it as a fact or move it out.
-- End the session telling the human: the artifact path (and its `.html`), to
-  skim and correct any wrong facts (not opinions), the next command
-  (`grove-design <slug>`), and to start a fresh session.
+- Zero recommendations anywhere in this artifact.
+- End the session telling the human: the artifact path (and its `.html`),
+  to skim and correct any wrong facts (not opinions), its approval state,
+  the next command (`grove-design <slug>`), and to start a fresh session.
