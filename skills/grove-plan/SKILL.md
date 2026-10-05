@@ -26,6 +26,11 @@ closely but a fresh agent can execute from a cold start, slice by slice.
 
 ## Preconditions & gates
 
+**Epic gate (always refuses, no `--force`):** if `feature.md` has
+`kind: epic`, refuse to run. Tell the human which child to work on next (the
+lowest-`order` child not yet past `grove-questions`, per `references/gates.md`)
+and point them at that child's own `grove-plan` once it's ready.
+
 **Hard gate:** `04-structure.md` must be `status: approved`. If not, stop
 and tell the human to run `grove-approve <slug> structure` first, unless
 `--force <reason>` is given — record in `forced`.
