@@ -48,8 +48,10 @@ whether to continue anyway — never block (`references/gates.md`).
    and decide epic vs. feature in step 4's size verdict.
 0b. **Child mode.** Read the epic's `feature.md`, `03-design.md`, and the
    matching entry in `04-structure.md` (goal, outcome, scope `E-D` ids,
-   dependencies). Create the child's folder and `feature.md`
-   (`kind: feature`, `parent: <epic-slug>`, `order` from the structure entry).
+   dependencies). If the child's folder doesn't exist yet, create it and its
+   `feature.md` (`kind: feature`, `parent: <epic-slug>`, `order` from the
+   structure entry), naming it per the epic-child slug rule in
+   `references/contract.md` (`<prefix>-<NN>-<kebab-name>`).
    Write **delta** research questions only — what the epic's research didn't
    cover, plus anything in this child's own area that may have changed since.
    Show the rolling-wave warning if it applies. Then continue at step 5 (the

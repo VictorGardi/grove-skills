@@ -14,6 +14,13 @@ children's folders, never nesting them.
 **Feature slug:**
 - `<TICKET-ID>-<kebab-name>` when a tracker ticket exists (e.g. `ENG-123-retry-queue`)
 - `<YYYY-MM-DD>-<kebab-name>` otherwise (e.g. `2026-10-04-retry-queue`)
+- **Epic children** insert their two-digit `order` after the prefix, so a
+  directory listing sorts children in build order:
+  `<TICKET-ID>-<NN>-<kebab-name>` or `<YYYY-MM-DD>-<NN>-<kebab-name>`
+  (e.g. `2026-10-04-01-retry-queue-core`). `NN` is the child's `order` when
+  its folder is created and is never renumbered afterwards — a child added
+  on re-approval takes the next free number, even if it slots earlier in
+  `children:`. `children:` and `order` stay the source of truth for order.
 
 ## Kind: epic vs feature
 

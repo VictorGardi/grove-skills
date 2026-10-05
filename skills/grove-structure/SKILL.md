@@ -44,7 +44,8 @@ existing `04-structure.md`, warn about staleness and offer to revise.
 0. **Epic mode** (`feature.md` has `kind: epic`): skip steps 1–3 below and
    instead produce a list of ≤ `limits.epicMaxChildren` **child features**.
    For each child, specify:
-   - a slug suggestion
+   - a slug suggestion, numbered in list order per the epic-child slug rule
+     in `references/contract.md` (`<prefix>-<NN>-<kebab-name>`)
    - a one-line goal
    - an observable outcome
    - its scope: the `E-D` ids it depends on and the `03-design.md` sections

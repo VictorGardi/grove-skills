@@ -71,6 +71,9 @@ None beyond the content gates below — approval is the mechanism that
      epic design is not a staleness event.
    - **Epic structure (`04-structure.md`), first approval:** create each
      listed child's folder: `<artifactRoot>/<child-slug>/feature.md`
+     (`<child-slug>` carries the child's two-digit order, per the epic-child
+     slug rule in `references/contract.md`; fix the slug if the structure
+     entry lacks it)
      (`kind: feature`, `parent: <epic-slug>`, `order`, `created`) with a body
      stating the child's goal, outcome, scope, and dependencies from the
      structure entry. The child starts in the backlog (no `01-questions.md`
