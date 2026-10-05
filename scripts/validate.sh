@@ -79,6 +79,10 @@ for skill_dir in "$skills_dir"/*/; do
   fi
 done
 
+if ! bash "$repo_root/scripts/validate-fixtures.sh"; then
+  fail=1
+fi
+
 if (( fail == 0 )); then
   echo "OK: all skills validated"
 fi
