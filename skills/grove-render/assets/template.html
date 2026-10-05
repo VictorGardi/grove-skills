@@ -13,6 +13,8 @@
     --open: #7c3aed; --open-bg: #f5f3ff;
     --deferred: #475569; --deferred-bg: #f1f5f9;
     --new: #15803d; --modified: #b45309; --deleted: #b91c1c;
+    --appetite: #0f766e; --appetite-bg: #f0fdfa;
+    --epic: #9333ea; --epic-bg: #f5f0fe;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -22,6 +24,8 @@
       --open: #c4b5fd; --open-bg: #1d1733;
       --deferred: #94a3b8; --deferred-bg: #171b22;
       --new: #4ade80; --modified: #fbbf24; --deleted: #f87171;
+      --appetite: #2dd4bf; --appetite-bg: #0b2321;
+      --epic: #d8b4fe; --epic-bg: #241a33;
     }
   }
   :root[data-theme="dark"] {
@@ -81,6 +85,16 @@
   .callout.risk { color: var(--risk); background: var(--risk-bg); border-color: var(--risk); }
   .callout.open-question { color: var(--open); background: var(--open-bg); border-color: var(--open); }
   .callout.deferred { color: var(--deferred); background: var(--deferred-bg); border-color: var(--deferred); }
+  .callout.appetite { color: var(--appetite); background: var(--appetite-bg); border-color: var(--appetite); }
+
+  .tag { font-size: 11px; font-weight: 600; color: var(--accent); background: var(--accent-bg); border-radius: 4px; padding: 1px 6px; margin-right: 6px; }
+  .inherited-decisions { border: 1px dashed var(--border); border-radius: 10px; padding: 12px 16px; margin: 16px 0; }
+  .inherited-decisions h4 { margin-top: 0; }
+  .inherited-row { padding: 4px 0; color: var(--muted); }
+
+  .badge.epic { background: var(--epic); color: #fff; border-radius: 4px; padding: 1px 6px; font-size: 11px; margin-left: 8px; }
+  .epic-link { display: inline-block; margin: 8px 0; color: var(--epic); font-size: 13px; text-decoration: none; }
+  .epic-link:hover { text-decoration: underline; }
 
   @media (max-width: 720px) {
     .layout { flex-direction: column; }

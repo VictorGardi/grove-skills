@@ -41,10 +41,19 @@ None — render has no approval gate; it's pure presentation.
      a proposed shape → current-vs-proposed two-column block.
    - `## One-way decisions` → one decision card per decision: question,
      options as cards (pros/cons/reversibility/cost), chosen option
-     highlighted.
+     highlighted. An `E-D<n>` id prefix (epic design) renders as a small tag
+     on the card.
+   - `## Inherited decisions` (child design) → inherited-decisions block: one
+     read-only row per `E-D` id and its chosen option, visually distinct from
+     this child's own decision cards (no veto/options UI — it's a summary).
+   - `## Appetite` / `## Appetite check` → appetite callout: the budget and,
+     if present, the fit verdict and proposed cuts.
    - A file-tree diff with NEW/MODIFIED/DELETED markers → file-tree diff
      component with matching badges.
    - A list of slices with dependencies → slice timeline component.
+   - A list of child features with dependencies (epic structure) → child
+     dependency graph component (Mermaid graph, one node per child slug,
+     edges from the dependencies each child lists).
    - Any `> [!risk]`, `> [!open-question]`, `> [!deferred]` style callouts →
      the matching callout component.
    - Everything else renders as plain prose inside the sidebar-ToC layout.
@@ -52,6 +61,10 @@ None — render has no approval gate; it's pure presentation.
    `03-design.html`).
 5. Add a banner at the top of the rendered page: "Generated from
    `<filename>.md` v`<version>`. Do not edit — re-run grove-render instead."
+   If the source's `feature.md` has `kind: epic`, add an "Epic" badge next to
+   it. If it has `parent` set, add a link back to the epic's own rendered
+   artifact of the same phase, if one exists (e.g. a child's `03-design.html`
+   links to the epic's `03-design.html`).
 6. If `grove.config.json` has `commitHtml: false` (default), remind whoever
    invoked this that the `.html` is gitignored and local-only.
 

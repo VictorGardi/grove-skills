@@ -91,6 +91,54 @@ Use for: risks, open questions, deferred items.
 <div class="callout deferred">⏸ <!-- deferred item --></div>
 ```
 
+## Inherited decisions
+
+Use for: `## Inherited decisions` in a child's `03-design.md`. Read-only —
+no options/veto UI, just a summary row per inherited decision.
+
+```html
+<div class="inherited-decisions">
+  <h4>Inherited from epic</h4>
+  <div class="inherited-row"><span class="tag">E-D1</span> <!-- chosen option, one line --></div>
+  <div class="inherited-row"><span class="tag">E-D2</span> <!-- chosen option, one line --></div>
+</div>
+```
+
+## Appetite callout
+
+Use for: `## Appetite` (epic shaping) or `## Appetite check` (epic design/structure).
+
+```html
+<div class="callout appetite">
+  ⏳ Appetite: <!-- e.g. "3 weeks" --> · <!-- fit verdict, if present, e.g. "Over budget — see cuts below" -->
+</div>
+```
+
+## Child dependency graph
+
+Use for: the ordered list of child features in an epic's `04-structure.md`.
+
+```html
+<div class="diagram-block">
+  <pre class="mermaid">graph TD; child-1-->child-2; child-1-->child-3;</pre>
+  <details class="diagram-fallback">
+    <summary>Diagram source</summary>
+    <pre><code><!-- raw mermaid source, escaped --></code></pre>
+  </details>
+</div>
+```
+
+## Epic / child banner
+
+Use for: the top-of-page banner (see `SKILL.md` step 5), in addition to the
+standard "generated from" line.
+
+```html
+<span class="badge epic">Epic</span>
+<!-- or, on a child's rendered artifact -->
+<a class="epic-link" href="<!-- epic's same-phase .html, relative path -->">↑ Part of epic <!-- epic slug --></a>
+```
+
 ## Table of contents
 
 Populate `<!-- GROVE:TOC -->` with one `<a href="#slug">Heading</a>` per `##`
