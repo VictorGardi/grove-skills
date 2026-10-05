@@ -99,6 +99,8 @@ based_on:                # upstream artifacts and the versions read
   - parent:02-research.md@3   # child only: the epic's artifact and version read
   - parent:03-design.md@2
 forced: []               # reasons, if a gate was overridden with --force
+repo_heads:              # 02-research.md only: VCS ref(s) read, e.g. git rev-parse HEAD per repo
+  - abc1234
 ---
 ```
 
