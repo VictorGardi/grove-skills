@@ -8,8 +8,11 @@ license: MIT
 
 ## Purpose
 
-Phase 4 of grove. Decide **how we get there**: an ordered list of vertical
-slices, each independently verifiable, starting with a tracer bullet.
+Phase 4 of grove. Decide **how we get there**. For a normal feature or a
+child: an ordered list of vertical slices, each independently verifiable,
+starting with a tracer bullet. For an epic: an ordered list of child
+features instead — this is the phase where an epic's child folders get
+their shape (`grove-approve` creates the folders once this is approved).
 
 ## When to use / not use
 
@@ -20,8 +23,12 @@ slices, each independently verifiable, starting with a tracer bullet.
 
 ## Inputs
 
-`03-design.md` (approved), `grove.config.json` (`limits.maxSlices`,
+`03-design.md` (approved), `feature.md` (for `kind`/`appetite`),
+`grove.config.json` (`limits.maxSlices`, `limits.epicMaxChildren`,
 `commands.*`).
+
+Child mode (`feature.md` has `parent` set): also the epic's
+`04-structure.md` entry for this child, to keep slices within its scope.
 
 ## Preconditions & gates
 
@@ -34,10 +41,30 @@ existing `04-structure.md`, warn about staleness and offer to revise.
 
 ## Process
 
+0. **Epic mode** (`feature.md` has `kind: epic`): skip steps 1–3 below and
+   instead produce a list of ≤ `limits.epicMaxChildren` **child features**.
+   For each child, specify:
+   - a slug suggestion
+   - a one-line goal
+   - an observable outcome
+   - its scope: the `E-D` ids it depends on and the `03-design.md` sections
+     it implements
+   - dependencies on other children
+   - a rough size, which must fit the normal feature limits
+     (`limits.maxOneWayDecisions`, `limits.maxSlices`) — if a child looks like
+     it won't fit, split it into two children instead of writing an oversized
+     one.
+   Child 1 is always the **walking skeleton**: the thinnest end-to-end
+   version of the whole epic. Add `## Appetite check` (does this child list
+   still fit `feature.md`'s `appetite`? propose cuts if not) and `##
+   Deferred`. Then skip to step 4 (review) and step 6 (render as a child
+   dependency graph, not a slice timeline) — steps 1–3, 5 don't apply.
 1. Break the design into ≤ `limits.maxSlices` **vertical** slices — never
    horizontal layers (e.g. never "slice 1: all the models, slice 2: all the
    endpoints"). Slice 1 is a tracer bullet: the thinnest end-to-end path that
-   runs.
+   runs. Child mode: every slice must stay inside the scope (`E-D` ids /
+   design sections) this child was given in the epic's `04-structure.md` —
+   flag anything that doesn't fit, rather than silently expanding scope.
 2. For each slice, specify:
    - an observable outcome
    - files to add or change
@@ -47,10 +74,12 @@ existing `04-structure.md`, warn about staleness and offer to revise.
    - dependencies on earlier slices
 3. Add `## Deferred` (deliberately not building this round) and
    `## Rollout / migration` if relevant.
-4. Review the slice list with the human. Their feedback changes the outline —
-   it never triggers implementation from this skill.
+4. Review the slice (or child) list with the human. Their feedback changes
+   the outline — it never triggers implementation, or child-folder creation,
+   from this skill.
 5. Write `04-structure.md` (≤ ~2 pages).
-6. Invoke `grove-render` for `04-structure.html` as a slice timeline.
+6. Invoke `grove-render` for `04-structure.html`: a slice timeline for a
+   normal feature or child, or a child dependency graph for an epic.
 
 ## Output
 
@@ -61,14 +90,23 @@ existing `04-structure.md`, warn about staleness and offer to revise.
 - **Content gate:** every slice must have a verification step before this
   artifact can be marked approvable — if any slice lacks one, fix it before
   ending the session, don't hand it off incomplete.
-- If more than `limits.maxSlices` slices are needed, stop and propose a split
-  of the feature rather than writing an oversized structure.
+- If more than `limits.maxSlices` slices (or, epic mode, `limits.epicMaxChildren`
+  children) are needed, stop and propose a split of the feature (or
+  reorganizing into fewer, larger children) rather than writing an oversized
+  structure.
 
 ## Rules
 
 - Slices are vertical (user/system-observable outcomes), not layers.
 - Never begin writing implementation code from this skill, even if the human
-  seems eager to — that belongs to `grove-plan` then `grove-implement`.
+  seems eager to — that belongs to `grove-plan` then `grove-implement`. Epic
+  mode: never create child folders from this skill either — that's
+  `grove-approve`'s job, only once the human approves this structure.
+- Child mode: anything outside the scope the epic's structure gave this
+  child gets flagged for the human, not silently absorbed.
 - End the session telling the human: the artifact path (and `.html`), to
-  review carefully (short, but every slice matters), the exact next command
-  (`grove-approve <slug> structure`), and to start a fresh session.
+  review carefully (short, but every slice/child matters), the exact next
+  command (`grove-approve <slug> structure`), and to start a fresh session.
+  Epic mode: also tell them that approving this structure creates the child
+  folders, and that `grove-plan`/`grove-implement` refuse on the epic itself —
+  the next work happens inside child 1.
