@@ -1,6 +1,6 @@
 ---
 name: grove-epic-status
-description: Read-only status table for an epic's children — order, stage, artifact statuses, blocking dependencies, next action, and progress against the appetite. Load when the human asks for an epic's status, progress, or "what's next" across its children.
+description: Read-only status table for an epic's children — order, flow, stage, artifact statuses, blocking dependencies, next action, and progress against the appetite. Load when the human asks for an epic's status, progress, or "what's next" across its children.
 license: MIT
 ---
 
@@ -28,7 +28,7 @@ reading each child's own files.
 - The epic's slug.
 - The epic's `feature.md` (`children:`, `appetite`, `created`) and
   `03-design.md` (for `E-D` ids).
-- Each child's `feature.md` (`order`) and whatever phase artifacts exist for it.
+- Each child's `feature.md` (`order`, `flow`) and whatever phase artifacts exist for it.
 
 ## Preconditions & gates
 
@@ -39,9 +39,14 @@ None — read-only, no gate to satisfy.
 1. Read the epic's `feature.md`. If `kind` isn't `epic`, stop and say so.
 2. For each slug in `children:`, read its `feature.md` and whichever phase
    artifacts exist, in order, to determine:
+   - its flow (`full` / `standard` / `small`; missing = `full`), and
+     whether its `## Flow log` shows a change since creation
    - current stage (backlog / questions / research / design / structure /
-     plan / implementation / done — "done" means `06-implementation.md`'s
-     final PR description is written)
+     implementation / done). A `05-plan.md` or `06-implementation.md` means
+     `implementation` (plan is written per slice inside it); "done" means
+     `06-implementation.md`'s final PR description is written. The stages a
+     child passes through depend on its flow: `small` skips research,
+     design, and structure.
    - each artifact's `status` (`draft`/`approved`/`stale`) present so far
    - blocking dependencies (from the epic's `04-structure.md` entry for this
      child: which other children it depends on, and whether those are done)
@@ -53,8 +58,11 @@ None — read-only, no gate to satisfy.
    percent-complete guessing**.
 5. Determine the next action: the lowest-`order` child not yet at
    `implementation`, respecting dependencies (don't suggest a child whose
-   dependency isn't done yet — name the blocking dependency instead).
-6. Print a table: order, slug, stage, artifact statuses, blocking
+   dependency isn't done yet — name the blocking dependency instead). The
+   command depends on the child's stage and flow — e.g. backlog →
+   `grove-start <slug>`; `standard` with research done → `grove-design`;
+   approved structure → `grove-implement`.
+6. Print a table: order, slug, flow, stage, artifact statuses, blocking
    dependencies, next action. Then a short section for flagged
    stale/conflicting children, and the appetite line.
 
