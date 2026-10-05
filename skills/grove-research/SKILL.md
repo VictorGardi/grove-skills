@@ -73,6 +73,8 @@ a proposed solution, discard and re-run it with just the question text.
    - `## Test landscape` — what covers this area today and how to run it
    - `## Relevant ADRs`
    - `## Unknowns`
+   - `## Spikes` (optional — only present once `grove-spike` has added a
+     finding; never written by this skill itself)
    - `## Open questions`
 4. Set frontmatter: `phase: research`, `based_on: ["01-questions.md@<version read>"]`
    (child mode: also append `"parent:02-research.md@<epic version read>"`).
