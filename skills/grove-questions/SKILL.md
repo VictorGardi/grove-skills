@@ -1,6 +1,6 @@
 ---
 name: grove-questions
-description: Turn a ticket or idea into scope, neutral research questions, and a size verdict (phase 1 of the grove workflow — Questions/Research/Design/Structure/Plan/Implement). Load when the human wants to start a new grove feature, start grove on a ticket, or run the questions phase.
+description: Turn a ticket or idea into scope, neutral research questions, a size verdict, and a proposed flow (phase 1 of the grove workflow; usually run inside grove-start). Load when the human wants to run or revise only the questions phase, or start a small feature without research.
 license: MIT
 ---
 
@@ -10,13 +10,16 @@ license: MIT
 
 Phase 1 of grove. Turn a ticket or idea into: a scoped goal, a set of neutral
 factual research questions about the *current* system, product questions only
-a human can answer, and a size verdict. For a large idea, this is also where
+a human can answer, a size verdict, and a proposed **flow** (`full`,
+`standard`, or `small` — see `references/contract.md`, "Flows"). For a large idea, this is also where
 **epic mode** starts: shaping the idea and splitting it into child features
 instead of writing research questions for the whole thing at once.
 
 ## When to use / not use
 
-- Use at the very start of a new feature, before any research or design exists.
+- Usually runs inside `grove-start`, which loads this skill and then
+  continues into research. Use it directly to start a feature you expect to
+  be `small` (no research), or to revise.
 - Use again in **revise mode** if `01-questions.md` already exists and the
   human has feedback.
 - Do not use mid-feature — later phases have their own skills.
@@ -54,9 +57,9 @@ whether to continue anyway — never block (`references/gates.md`).
    `references/contract.md` (`<prefix>-<NN>-<kebab-name>`).
    Write **delta** research questions only — what the epic's research didn't
    cover, plus anything in this child's own area that may have changed since.
-   Show the rolling-wave warning if it applies. Then continue at step 5 (the
+   Show the rolling-wave warning if it applies. Then continue at step 4c (the
    size verdict doesn't apply to a child — its size is already bounded by the
-   epic's structure).
+   epic's structure — so propose `standard`).
 1. **Snapshot the ticket.** Write the ticket text verbatim, unedited, to
    `00-ticket.md` (plain text, no frontmatter — it's a source snapshot).
 2. **Shallow orientation only.** Read `CONTEXT.md` and ADR titles in `adrDir`.
@@ -77,18 +80,17 @@ whether to continue anyway — never block (`references/gates.md`).
    - `## Product questions for the human` — only things the code cannot
      answer (priorities, trade-offs, constraints).
    - `## Size verdict` — S / M / L with reasons:
-     - **S**: clear result, known pattern, ≤ ~3 files. Recommend skipping
-       research and design, and say why.
-     - **M**: default — full phase sequence.
+     - **S**: clear result, known pattern, ≤ ~3 files, no one-way decision.
+       Proposes `small` flow (no research, design, or structure).
+     - **M**: the default. Proposes `standard` flow.
      - **L**: likely more one-way decisions than `limits.maxOneWayDecisions`,
        spans more than 2 unfamiliar modules, or has several user-visible
-       outcomes. **Offer epic mode as an alternative to a plain split**: if
-       the human picks it, rewrite `feature.md`'s `kind` to `epic`, delete the
-       `## Research questions`/`## Size verdict` framing from this artifact,
-       and continue at step 4b instead of step 5. If they decline epic mode,
-       fall back to the existing behavior: propose a split into sub-features,
-       each with its own slug and one-line goal, and do not create any
-       sub-feature folders until the human agrees.
+       outcomes. Offer three options: **epic mode** (if picked, rewrite
+       `feature.md`'s `kind` to `epic`, delete the `## Research questions`/
+       `## Size verdict` framing from this artifact, and continue at step 4b);
+       a **split** into sub-features, each with its own slug and one-line goal
+       (create no sub-feature folders until the human agrees); or **one
+       feature in `full` flow**.
    - `## Open questions`
 4b. **Epic mode.** `feature.md` is now `kind: epic`; `appetite` is required.
    Check the epic's `feature.md` body for the shaping headings (`## Problem`,
@@ -96,11 +98,25 @@ whether to continue anyway — never block (`references/gates.md`).
    and walk the human through any that are missing or vague, one at a time.
    Then write broad `01-questions.md` research questions covering the whole
    area the epic touches (same neutrality rule as step 4). Skip the S/M/L
-   size verdict — an epic is, by definition, already past that.
+   size verdict — an epic is, by definition, already past that. An epic's
+   flow is always `full`.
+4c. **Propose the flow** per the table in `references/contract.md` ("Flows"):
+   epic → `full`, child → `standard`, S → `small`, M → `standard`, L (not an
+   epic) → `full`. State it with a one-line reason (e.g. "standard: size M,
+   two two-way decisions and one schema change — design and slices fit one
+   review"), and let the human confirm or pick another. Write `flow` into
+   `feature.md` and append the first `## Flow log` line, e.g.
+   `- 2026-10-05: standard (proposed from size M, confirmed)`. If the human
+   changes it, log their choice and reason instead.
 5. **Walk the product questions one at a time.** Ask each separately, record
    the answer into the artifact immediately, then move to the next.
 6. Set frontmatter `phase: questions`, `status: draft`, `version: 1` (or bump
    on revise).
+7. **Inline approval** — skip this when running inside `grove-start` (it
+   approves at its own end). Otherwise follow `references/approve.md` for the
+   `questions` unit: validate, summarise, ask *"Approve now? (yes / not
+   yet)"*. Only an explicit yes approves. In `small` flow approval is a hard
+   gate for `grove-implement`; otherwise it's optional (research's soft gate).
 
 ## Output
 
@@ -109,8 +125,8 @@ whether to continue anyway — never block (`references/gates.md`).
 
 ## Stop conditions
 
-- Stop if the size verdict is L and the human hasn't yet agreed to a split or
-  to epic mode.
+- Stop if the size verdict is L and the human hasn't yet agreed to epic mode,
+  a split, or one `full`-flow feature.
 - Stop once all product/shaping questions are answered and the artifact is
   written — do not proceed into research yourself.
 
@@ -121,7 +137,10 @@ whether to continue anyway — never block (`references/gates.md`).
   phrasing before finalizing.
 - In child mode, never re-ask or re-decide anything the epic's `feature.md`
   or `03-design.md` already settled — delta questions only.
-- End the session by telling the human: the artifact path, what to review (2
-  min), and the exact next command (`grove-approve <slug> questions` is
-  optional — questions only needs a soft read before `grove-research`, per
-  `references/gates.md`), and to start a fresh session for the next phase.
+- The human may change the flow at any time by asking: write the new `flow`
+  and a `## Flow log` line with the reason (`references/contract.md`,
+  "Changing the flow").
+- End the session (when not inside `grove-start`) by telling the human: the
+  artifact path, its approval state, and the exact next command —
+  `grove-implement <slug>` in `small` flow, otherwise `grove-research <slug>`
+  — and to start a fresh session for it.
