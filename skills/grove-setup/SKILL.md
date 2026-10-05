@@ -1,6 +1,6 @@
 ---
 name: grove-setup
-description: Prepare a repo to use the grove workflow (Questions, Research, Design, Structure, Plan, Implement, Approve, Render). Run once per repo, before any other grove-* skill, to create grove.config.json, docs/adr/, CONTEXT.md, and the AGENTS.md block. Load when the human asks to set up or initialize grove in a repo, or when another grove-* skill reports grove.config.json is missing.
+description: Prepare a repo to use the grove workflow (Start, Questions, Research, Design, Structure, Implement, Approve, Render). Run once per repo, before any other grove-* skill, to create grove.config.json, docs/adr/, CONTEXT.md, and the AGENTS.md block. Load when the human asks to set up or initialize grove in a repo, or when another grove-* skill reports grove.config.json is missing.
 license: MIT
 ---
 
@@ -9,8 +9,8 @@ license: MIT
 ## Purpose
 
 One-time per-repo setup for the grove workflow: a phased, human-gated
-Questions → Research → Design → Structure → Plan → Implement sequence with
-explicit approval gates. This skill creates the per-repo config and durable
+Questions → Research → Design → Structure → Implement sequence, run in one
+of three flows (`full`, `standard`, `small`) with explicit approval gates. This skill creates the per-repo config and durable
 knowledge scaffolding that every other `grove-*` skill depends on.
 
 ## When to use / not use
@@ -18,7 +18,7 @@ knowledge scaffolding that every other `grove-*` skill depends on.
 - Use once, the first time grove is used in a repo.
 - Use again only to update stack commands or tracker config — it never
   overwrites existing `CONTEXT.md`, ADRs, or artifacts.
-- Do not use for anything feature-specific — that starts with `grove-questions`.
+- Do not use for anything feature-specific — that starts with `grove-start`.
 
 ## Inputs
 
@@ -54,9 +54,12 @@ None. This is the entry point.
      `references/context-template.md`).
 4. **Update `AGENTS.md`.** Add or replace the content between
    `<!-- grove:start -->` and `<!-- grove:end -->` markers (create the file if
-   missing) describing: the workflow phases, artifact locations
-   (`<artifactRoot>/<feature-slug>/`), and the gate rules (see
-   `references/gates.md`). Never touch content outside the markers.
+   missing) describing: the three flows and their sessions (see
+   `references/contract.md`, "Flows"), artifact locations
+   (`<artifactRoot>/<feature-slug>/`), the gate rules (see
+   `references/gates.md`), and that approval happens only on the human's
+   explicit yes — inline at the end of a gated skill, or via `grove-approve`.
+   Never touch content outside the markers.
 5. **`CLAUDE.md` pointer.** If `CLAUDE.md` exists and does not already
    reference `AGENTS.md`, append a short pointer line (e.g. `See AGENTS.md for
    the grove workflow.`). Do not create `CLAUDE.md` if it doesn't exist.

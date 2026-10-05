@@ -18,7 +18,7 @@ and delete the code. A spike never ships; its *answer* is the deliverable.
 - Use when `grove-research` or `grove-design` (epic or feature) hits a
   question that needs code run to answer, not just code read.
 - Do not use for anything meant to survive — that's a slice, built via
-  `grove-plan`/`grove-implement` once a decision is made.
+  `grove-implement` once a decision is made.
 - Do not use to make a decision for the human — a spike produces evidence
   for the grilling loop in `grove-design`, not a decision itself.
 

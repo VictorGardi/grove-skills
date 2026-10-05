@@ -54,6 +54,18 @@ link_one() {
 }
 
 status=0
+
+# Prune links to skills/commands this repo no longer has (e.g. a removed
+# skill), so a stale link never shadows anything.
+for dir in "$skills_target" "$commands_target"; do
+  for dst in "$dir"/*; do
+    if [[ -L "$dst" && ! -e "$dst" && "$(readlink "$dst")" == "$repo_root"/* ]]; then
+      rm "$dst"
+      echo "pruned (no longer in repo): $dst"
+    fi
+  done
+done
+
 for skill_dir in "$repo_root"/skills/*/; do
   name="$(basename "$skill_dir")"
   link_one "${skill_dir%/}" "$skills_target/$name" || status=1
