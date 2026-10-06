@@ -86,7 +86,9 @@ section is missing or has an unticked `- [ ]`. Then, for that slice:
 **After the last slice:** run every configured check
 (`commands.test/typecheck/lint/build`), write a PR description (summary of
 the design, the slices, how to verify) into `06-implementation.md`, and post
-a Linear comment if `tracker.postComments` is true.
+a Linear comment if `tracker.postComments` is true. Then tell the human that
+the feature is done once they run `grove-approve <slug> implementation`;
+never approve it yourself.
 
 ## Output
 

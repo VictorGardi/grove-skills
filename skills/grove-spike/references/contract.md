@@ -107,7 +107,10 @@ combined approval now come before `grove-implement` can continue.
 | `03-design.md` (+ `.html`) | grove-design (not in `small` flow) | careful, ≤ ~200 lines |
 | `04-structure.md` (+ `.html`) | grove-structure (`full`); grove-design (`standard`) (not in `small` flow) | careful, ≤ ~2 pages |
 | `05-plan.md` | grove-implement, one slice at a time, just before executing it | none — agent-facing, self-checked (epics: not produced) |
-| `06-implementation.md` | grove-implement | per slice (epics: not produced) |
+| `06-implementation.md` | grove-implement; approved by the human after the last slice (`grove-approve <slug> implementation`) | per slice (epics: not produced) |
+
+An approved `06-implementation.md` marks the feature **done**. Nothing else
+does: a fully ticked `05-plan.md` only means the slices ran.
 
 `.html` companions are generated only by `grove-render` and are never hand-edited.
 `feature.md` is not a phase artifact: it has no `phase`/`status`/`version`

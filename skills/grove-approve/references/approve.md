@@ -41,6 +41,7 @@ if any file fails, nothing in the unit is approved.**
 | `design` | `03-design.md` | `full` flow and epics only |
 | `structure` | `04-structure.md` | `full` flow; `standard` flow only when `03-design.md` is already `approved` (a structure revised after the combined approval) |
 | `design+structure` | `03-design.md`, `04-structure.md` | `standard` flow — atomic |
+| `implementation` | `06-implementation.md` | after the last slice, all flows; never on an epic — approving it marks the feature done |
 
 Rules:
 
@@ -68,6 +69,9 @@ Rules:
      has a slug, goal, outcome, scope, and size estimate)
    - design: every one-way decision has a chosen option
    - questions in `small` flow: `## Size verdict` is S
+   - implementation: every slice in `04-structure.md` (`small` flow: every
+     slice in `05-plan.md`) has a `## Slice N` section in `05-plan.md`, and
+     `05-plan.md` has no `- [ ]` left
    If any check fails, list exactly what fails and stop — do not ask for
    approval. `--force <reason>` may override a failing check; record the
    reason in that file's `forced` array, and still ask for the yes.
@@ -87,7 +91,8 @@ Rules:
 6. **Stale marking.** Mark every existing artifact *downstream of the unit's
    last file* `status: stale` — e.g. approving `design+structure` marks an
    existing `05-plan.md` and `06-implementation.md` stale; approving `design`
-   in `full` flow marks `04-structure.md` onward stale. Wholesale per feature,
+   in `full` flow marks `04-structure.md` onward stale. `implementation` is
+   the last artifact, so it marks nothing stale. Wholesale per feature,
    except:
    - **Epic design, re-approval after a revision:** targeted stale marking on
      children, per `references/gates.md` ("Targeted stale marking"). An

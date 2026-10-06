@@ -29,7 +29,8 @@ resolves what to approve and runs that procedure.
 ## Inputs
 
 - The feature slug and the unit: `questions`, `research`,
-  `questions+research`, `design`, `structure`, or `design+structure`.
+  `questions+research`, `design`, `structure`, `design+structure`, or
+  `implementation` (after the last slice; marks the feature done).
   If the unit is omitted, propose the one that's pending (e.g. in `standard`
   flow with both drafts present: `design+structure`) and confirm it.
 - `feature.md` (`flow`, `kind`, `children`, `parent`, `order`), the
