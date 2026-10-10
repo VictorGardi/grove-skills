@@ -155,6 +155,44 @@ Its gate needs approved questions with an S verdict.
 Nothing ever lives only in chat: every decision is in an artifact before a
 session ends, so any session can be replaced by a fresh one.
 
+### Starting the next session for you
+
+Because the phase boundaries above are so regular, every phase skill
+(`grove-start`, `grove-questions`, `grove-research`, `grove-design`,
+`grove-structure`, `grove-implement`) ends by asking whether to start the
+next phase in a **new grove session**, and does it for you on a yes:
+
+```
+Start grove-design for 2026-10-05-retry-queue in a new session? (yes / no)
+→ yes → grove new opencode --cwd <repo root> \
+         --prompt "Load the grove-design skill with the skill tool and follow it exactly. Arguments: 2026-10-05-retry-queue" \
+         --label design-2026-10-05-retry-queue --link 2026-10-05-retry-queue
+→ prints the new session's id and label, plus grove focus <label>
+```
+
+- It spawns the **same agent you're in** (OpenCode stays OpenCode), pinned to
+  the feature with `--link` and labelled `<skill>-<slug>`, so `grove ls`,
+  `grove focus <label>` and `grove send <label> "..."` find it.
+- You can add notes to the prompt — *"use the main agent as orchestrator,
+  subagents for read/write"*, *"start from slice 2"* — and they're appended
+  verbatim.
+- Where continuing in the same session is just as good (`grove-design` →
+  `grove-structure` in `full` flow, slice → slice), the offer is *"Continue
+  here, or start `grove-structure` in a new session?"* and continuing is the
+  first option.
+- It spawns whichever command the skill names next, approval state included:
+  if the artifact is still `draft` and the next phase sits behind a hard
+  gate, that command is `grove-approve <slug> <unit>`.
+- The offer only appears inside the Grove app (where `grove` is on `PATH` and
+  `GROVE_SESSION_ID` is set). Outside it — plain Claude Code, a terminal, the
+  app closed — the close step is unchanged: paths, approval state, next
+  command.
+
+The rules live in `shared/next-session.md`, copied into each phase skill's
+`references/` like every other shared file. It is fire-and-forget: the ending
+session never waits on the new one's output — that is the context break it
+exists to create.
+
 ### Approving
 
 Every gated skill (`grove-start`, `grove-questions`, `grove-research`,

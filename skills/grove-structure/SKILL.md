@@ -72,4 +72,6 @@ many slices or children).
   approval state, and the exact next command — `grove-implement <slug>` in a
   fresh session, or `grove-approve <slug> <unit>` if not approved yet. Epic
   mode: also that `grove-implement` refuses on the epic itself — the next
-  work is `grove-start <child-1-slug>`.
+  work is `grove-start <child-1-slug>`. Then follow
+  `references/next-session.md` and offer to start that command in a new grove
+  session.

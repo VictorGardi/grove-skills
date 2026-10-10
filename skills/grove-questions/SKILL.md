@@ -117,6 +117,12 @@ whether to continue anyway — never block (`references/gates.md`).
    `questions` unit: validate, summarise, ask
    *"Approve now? (yes / not yet)"*. Only an explicit yes approves. In `small` flow approval is a hard
    gate for `grove-implement`; otherwise it's optional (research's soft gate).
+8. **Close, then offer the next session.** Report the artifact path and its
+   approval state, then follow `references/next-session.md` to spawn the next
+   command — `grove-research <slug>` outside `small` flow,
+   `grove-implement <slug>` in `small` flow with the questions approved,
+   `grove-approve <slug> questions` otherwise — in a new grove session if the
+   human says yes.
 
 ## Output
 
@@ -143,4 +149,5 @@ whether to continue anyway — never block (`references/gates.md`).
 - End the session (when not inside `grove-start`) by telling the human: the
   artifact path, its approval state, and the exact next command —
   `grove-implement <slug>` in `small` flow, otherwise `grove-research <slug>`
-  — and to start a fresh session for it.
+  — and to start a fresh session for it, offering to start it for them per
+  `references/next-session.md`.

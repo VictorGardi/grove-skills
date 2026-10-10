@@ -79,9 +79,12 @@ to an epic child, per `references/gates.md`.
 8. **Close.** Tell the human:
    - what was written and its approval state
    - the exact next command: `grove-design <slug>` (`full`/`standard`), or
-     `grove-implement <slug>` (`small`)
+     `grove-implement <slug>` (`small`, with `01-questions.md` approved — if
+     it isn't, `grove-approve <slug> questions` instead)
    - to **start a fresh session** for it — research filled this session's
      context with noise the design conversation shouldn't carry.
+9. **Offer the next session.** Follow `references/next-session.md` and spawn
+   that next command in a new grove session if the human says yes.
 
 ## Output
 

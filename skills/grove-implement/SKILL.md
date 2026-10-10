@@ -47,7 +47,8 @@ command (`grove-start <child-slug>` for a backlog child).
 
 If not met, stop and name exactly what's missing and the command that
 fixes it, unless `--force <reason>` is given — record it in `05-plan.md`'s
-`forced`. `05-plan.md` is never a gate: this skill writes it.
+`forced`. `05-plan.md` is never a gate: this skill writes it. Offer to start
+that command in a new session per `references/next-session.md`.
 
 **Staleness:** if `03-design.md`, `04-structure.md` (or, `small`,
 `01-questions.md`) has a version newer than `05-plan.md`'s `based_on`, or
@@ -81,14 +82,18 @@ section is missing or has an unticked `- [ ]`. Then, for that slice:
    verify by hand, deviations logged. Continue to the next slice only when
    the human says so (then go back to step 1, in this session), or when
    invoked with `--all` (keep going slice by slice, still planning,
-   checking, logging, and committing per slice).
+   checking, logging, and committing per slice). Then follow
+   `references/next-session.md`: offer *"Continue here, or start the next
+   slice in a new session?"* — continuing is the first option, and only an
+   explicit request for a new session spawns one.
 
 **After the last slice:** run every configured check
 (`commands.test/typecheck/lint/build`), write a PR description (summary of
 the design, the slices, how to verify) into `06-implementation.md`, and post
 a Linear comment if `tracker.postComments` is true. Then tell the human that
 the feature is done once they run `grove-approve <slug> implementation`;
-never approve it yourself.
+never approve it yourself — and offer to start that session per
+`references/next-session.md`.
 
 ## Output
 
@@ -104,7 +109,10 @@ and (at the end) the PR description.
 - Stop completely, without writing code, the moment planning or execution
   would need a decision the design didn't make, or would touch a one-way
   decision in `03-design.md` — propose a design revision instead and leave
-  the approved design untouched until the human acts.
+  the approved design untouched until the human acts. Name the command that
+  resolves it (`grove-design <slug>` in revise mode, `grove-approve
+  <slug> <unit>`, a missing gate's skill) and offer to start it in a new
+  session per `references/next-session.md`.
 - `small` flow: any one-way decision at all means stop and propose
   switching to `standard`.
 
@@ -124,4 +132,5 @@ and (at the end) the PR description.
   debugging. Resuming is always just `grove-implement <slug>`.
 - End each stop telling the human: what to review (the diff), how to
   verify, and that the next slice continues on their go-ahead here or via
-  `grove-implement <slug>` in a fresh session.
+  `grove-implement <slug>` in a fresh session — offering to start that
+  session for them per `references/next-session.md`.

@@ -13,6 +13,9 @@ allowed_fields='name description license compatibility metadata disable-model-in
 # standalone form of the same procedure).
 gated_skills='grove-start grove-questions grove-research grove-design grove-structure grove-approve'
 
+# Skills that must offer the end-of-phase handoff to a new grove session.
+handoff_skills='grove-start grove-questions grove-research grove-design grove-structure grove-implement'
+
 err() { echo "FAIL: $1"; fail=1; }
 
 for skill_dir in "$skills_dir"/*/; do
@@ -63,6 +66,13 @@ for skill_dir in "$skills_dir"/*/; do
   if echo " $gated_skills " | grep -q " $skill_name "; then
     if ! grep -q 'references/approve.md' "$skill_md" || ! grep -q 'Approve now? (yes / not yet)' "$skill_md"; then
       err "$skill_name: gated skill lacks the inline approval step (references/approve.md + \"Approve now? (yes / not yet)\")"
+    fi
+  fi
+
+  # phase skills offer the end-of-phase handoff from shared/next-session.md.
+  if echo " $handoff_skills " | grep -q " $skill_name "; then
+    if ! grep -q 'references/next-session.md' "$skill_md"; then
+      err "$skill_name: phase skill lacks the new-session handoff (references/next-session.md)"
     fi
   fi
 

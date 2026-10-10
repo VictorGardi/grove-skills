@@ -61,4 +61,5 @@ Those in `references/research-process.md` (staleness, never fabricating).
 - Zero recommendations anywhere in this artifact.
 - End the session telling the human: the artifact path (and its `.html`),
   to skim and correct any wrong facts (not opinions), its approval state,
-  the next command (`grove-design <slug>`), and to start a fresh session.
+  and the next command (`grove-design <slug>`) in a fresh session — offering
+  to start that session for them per `references/next-session.md`.

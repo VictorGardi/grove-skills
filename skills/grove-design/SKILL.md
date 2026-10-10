@@ -198,3 +198,7 @@ entries.
     this same session is fine (the design context helps the slices).
   - `standard` flow, approved: `grove-implement <slug>`, in a fresh session.
   - not approved yet: `grove-approve <slug> <unit>` once they're happy.
+  Then follow `references/next-session.md`: offer to start that command in a
+  new grove session — asking *"Continue here, or start `grove-structure` in a
+  new session?"* for the `full`-flow and epic cases, and a plain yes/no offer
+  for the rest.
