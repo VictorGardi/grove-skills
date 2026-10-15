@@ -145,7 +145,7 @@ Parent mode, all required (`--force` is not available here):
      OpenCode `permission` config: the default allows edits and shell but asks
      for `external_directory` and `.env` reads, and an unattended run stops at
      any `ask`, so set `allow` for what the run needs (the `grove` and `git`
-     commands, the project's commands). Grove never starts OpenCode with `--auto` (and `opencode mini` has none),
+     commands, the project's commands). Grove never starts OpenCode with `--auto`,
      so only the `permission` config decides. A question in a child still halts
      the run (the question tool there is `question`).
    - Ask through the question tool, one question, options *continue*, *fix
