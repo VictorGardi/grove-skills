@@ -164,19 +164,32 @@ Parent mode, all required (`--force` is not available here):
    - **stop**: `grove kill <label>`, print where things are (worktree,
      branch, `04-run.md` in the worktree) and end.
 6. **After the last slice.** Once its gate is answered *finish* and the child
-   is killed, print the worktree path and branch, say that `04-run.md` (with
-   its `## Final summary`) lives there, and that approving the run is not
-   available yet.
+   is killed, print the hand-off as the final message:
+   the worktree path and branch; that `04-run.md` lives there with its
+   `## Final summary`; a ready-to-paste line with real values filled in,
+   `grove new claude --cwd <worktree> --prompt "/grove-approve <slug> run"`;
+   and the steps after approval: commit the approved `04-run.md` on the run
+   branch as `<slug>: approve run`, then merge or open a PR using the PR
+   description from the final summary. The parent approves nothing.
+
+**Abandoning a run.** When the human says to abandon the run, the parent
+leaves the branch and worktree in place, prints `git worktree remove
+<worktree>` and `git branch -D <branch>`, and runs them only if the human
+picks that in a question-tool question. An abandoned run is never resumed. To
+re-plan, the human runs `grove-auto <slug>`, re-approves with
+`grove-approve <slug> plan`, and `grove-run` starts a new run on the next free
+`-2`, `-3` branch from the new plan commit.
 
 ## Output
 
 Commits on `run/<slug>-<profile>` in the worktree: one per slice, including
-`04-run.md`. The parent writes no files.
+`04-run.md`; at the end, the hand-off message naming `grove-approve <slug> run`.
+The parent writes no files.
 
 ## Stop conditions
 
 Failed precondition, an unfinished slice, the human choosing stop at a gate,
-or the last slice's gate answered finish.
+the last slice's gate answered finish, or the human abandoning the run.
 
 ## Rules
 

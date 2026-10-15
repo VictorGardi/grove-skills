@@ -39,4 +39,12 @@ and never hand-edited.
   `status: approved`. No skill may invoke it on its own initiative.
 
 See `shared/gates.md` and `shared/contract.md` for the full rules.
+
+### `auto` flow
+
+Separate from the flows above: `grove-auto` (outcome interview, research
+map, plan) → `grove-run` (one child session per slice in a worktree).
+Artifacts: `01-outcome.md`, `03-plan.md`, `04-run.md` (the last lives on the
+run branch). Approvals: `grove-approve <slug> plan` and
+`grove-approve <slug> run`. `grove-run` has a hard gate on an approved plan.
 <!-- grove:end -->

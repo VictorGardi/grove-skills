@@ -56,7 +56,7 @@ the artifacts and their format are the same in every flow.
 | `full` | `grove-start` → `grove-design` → `grove-structure` → `grove-implement` | start (skim) → design → structure → each slice |
 | `standard` | `grove-start` → `grove-design` (writes design **and** structure) → `grove-implement` | start (skim) → design + structure (one review) → each slice |
 | `small` | `grove-start` (questions only) → `grove-implement` | questions → each slice |
-| `auto` | `grove-auto` (outcome interview, research map, plan) → `grove-run` (parent starts one child session per slice, one commit per slice) | outcome play-back → plan approval → after slice 1 |
+| `auto` | `grove-auto` (outcome interview, research map, plan) → `grove-run` (parent starts one child session per slice, one commit per slice) | outcome play-back → plan approval → after slice 1 → final review and run approval |
 
 An epic is always `full` and stops after structure: its implementation
 happens in its children. An epic is never `auto`. `auto` is never proposed by
@@ -112,7 +112,7 @@ combined approval now come before `grove-implement` can continue.
 | `06-implementation.md` | grove-implement; approved by the human after the last slice (`grove-approve <slug> implementation`) | per slice (epics: not produced) |
 | `01-outcome.md` | grove-auto (`auto` flow only) | plain-language Outcome Brief; the human reviews it at the play-back |
 | `03-plan.md` | grove-auto (`auto` flow only) | Decisions + Slices; approved with the outcome and research (`plan` unit) |
-| `04-run.md` | grove-run children (`auto` flow only); lives in the run's worktree on the run branch | after slice 1; not approved in this version |
+| `04-run.md` | grove-run children (`auto` flow only); lives in the run's worktree on the run branch | after slice 1; approved by the human after the final review (`grove-approve <slug> run`, run from the run worktree) |
 
 An `auto` feature has no `01-questions.md`, `03-design.md`, `04-structure.md`,
 `05-plan.md` or `06-implementation.md`.

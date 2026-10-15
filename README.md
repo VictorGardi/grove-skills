@@ -28,6 +28,8 @@ the flow on its own — it only proposes (e.g. `grove-implement` in `small`
 flow hitting a one-way decision proposes `standard`).
 
 Features created before flows existed have no `flow` and run as `full`.
+`auto` is a separate flow, started with `grove-auto`; it is described in
+"The `auto` flow" below.
 
 ### What each flow writes
 
@@ -55,6 +57,58 @@ Features created before flows existed have no `flow` and run as `full`.
 | `grove-render` | `*.html` companions (pure presentation, never hand-edited) |
 | `grove-spike` | throwaway prototype; the finding goes into `02-research.md`'s `## Spikes` |
 | `grove-epic-status` | read-only report of an epic's children: flow, stage, staleness, next action |
+| `grove-auto` | `auto` flow, planning half: outcome interview, short research note, decision-and-slice plan |
+| `grove-run` | `auto` flow, execution half: one child session per slice in one worktree, one commit per slice |
+
+### The `auto` flow
+
+For a feature you want built unattended. It runs outside the three flows
+above and needs the Grove app (`grove` on `PATH`, `GROVE_SESSION_ID` set).
+
+- `grove-auto <slug>`: an outcome-only interview, a short research note and
+  a plan of decisions and slices, written as `01-outcome.md`,
+  `02-research.md` and `03-plan.md`.
+- `grove-run <slug>`: starts one child session per slice in one worktree on
+  branch `run/<slug>-<profile>`, one commit per slice; progress is recorded
+  in `04-run.md` on that branch.
+
+Your stops: the outcome play-back, the plan veto then
+`grove-approve <slug> plan`, after slice 1, the final review, and
+`grove-approve <slug> run`. Add `--review-each` to `grove-run` to be asked
+after every slice. A slice that cannot finish halts, with its options in
+`04-run.md`; `grove-run <slug> --continue` resumes after you pick one.
+To abandon a run, say so: the parent leaves the branch and worktree and
+shows the `git worktree remove` / `git branch -D` commands (it runs them
+only if you choose that); a new plan means `grove-auto <slug>`, approve
+`plan` again, and `grove-run` starts a new `-2` run.
+
+Approving `run` (from the worktree) hands off: commit the approved
+`04-run.md` as `<slug>: approve run`, then merge or open a PR using the PR
+description in `04-run.md`'s `## Final summary`.
+
+**Profiles.** `grove.config.json` can define profiles that set the agent and
+model per role (`cto`, `researcher`, `planner`, `reviewer`, `implementer`):
+
+```json
+{
+  "profile": "fast",
+  "profiles": {
+    "fast": {
+      "cto": { "agent": "claude", "model": "<alias>" },
+      "researcher": { "agent": "claude", "model": "<alias>" },
+      "planner": { "agent": "claude", "model": "<alias>" },
+      "reviewer": { "agent": "claude", "model": "<alias>" },
+      "implementer": { "agent": "claude", "model": "<alias>" }
+    }
+  }
+}
+```
+
+Pick one with `--profile <name>` (or the config's `profile`); a role with no
+model is `inherit`, using the session's own. Models are requested, not
+verified. Unattended slices use your own permission settings: a repo without
+pre-approved edits and project commands halts at the first prompt, so allow
+the commands slice 1's review lists before you continue.
 
 Artifacts live in the target repo at `<artifactRoot>/<feature-slug>/`
 (default `artifactRoot`: `docs/work`). Markdown is canonical; `.html`
@@ -201,7 +255,8 @@ asking **"Approve now? (yes / not yet)"**. Only an explicit "yes" or
 "approve" counts — "looks good", feedback, or anything else leaves the
 artifact `draft`. To approve later, after reading the rendered HTML:
 `/grove-approve <slug> <unit>`, where the unit is `questions`, `research`,
-`questions+research`, `design`, `structure`, or `design+structure`.
+`questions+research`, `design`, `structure`, `design+structure`, `plan`
+or `run` (the last two for the `auto` flow).
 
 Approval does the same thing wherever it runs — validation, frontmatter,
 stale marking, ADR flips, epic child creation — because it lives in one

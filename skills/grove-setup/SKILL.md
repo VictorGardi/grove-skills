@@ -55,7 +55,10 @@ None. This is the entry point.
 4. **Update `AGENTS.md`.** Add or replace the content between
    `<!-- grove:start -->` and `<!-- grove:end -->` markers (create the file if
    missing) describing: the three flows and their sessions (see
-   `references/contract.md`, "Flows"), artifact locations
+   `references/contract.md`, "Flows"), plus a short note on the separate `auto`
+   flow (`grove-auto` → `grove-run`; artifacts `01-outcome.md`, `03-plan.md`,
+   `04-run.md`; approvals `grove-approve <slug> plan` and
+   `grove-approve <slug> run`; `grove-run` hard gate on an approved plan), artifact locations
    (`<artifactRoot>/<feature-slug>/`), the gate rules (see
    `references/gates.md`), and that approval happens only on the human's
    explicit yes — inline at the end of a gated skill, or via `grove-approve`.

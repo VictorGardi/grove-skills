@@ -338,6 +338,38 @@ plan_gate_failures() {
   echo "$based" | grep -qx "02-research.md@$v2" || echo "03-plan.md: based_on lacks 02-research.md@$v2"
 }
 
+# Print one line per failed run content gate for an auto feature folder
+# (see shared/approve.md, run unit). The Plan commit sha comparison needs git
+# and is not checkable in a fixture.
+run_gate_failures() {
+  local d="$1" run="$1/04-run.md" plan="$1/03-plan.md" key n sec pv based
+  if [[ ! -f "$run" ]]; then echo "04-run.md: missing"; return 0; fi
+  for key in feature phase status version created updated approved_at based_on forced; do
+    frontmatter "$run" | grep -q "^$key:" || echo "04-run.md: frontmatter key '$key' missing"
+  done
+  if [[ -n "$(awk '/^## Open questions/{f=1; next} f && /^## /{exit} f && NF' "$run")" ]]; then
+    echo "04-run.md: non-empty Open questions"
+  fi
+  if grep -Eq 'TODO|TBD' "$run"; then echo "04-run.md: contains TODO/TBD"; fi
+  if [[ -f "$plan" ]]; then
+    for n in $(sed -n 's/^### Slice \([0-9][0-9]*\)\..*/\1/p' "$plan"); do
+      sec="$(awk -v n="$n" '$0 ~ "^## Slice "n"( |$)" {f=1; next} f && /^## /{exit} f' "$run")"
+      if [[ -z "$sec" ]]; then echo "04-run.md: no '## Slice $n' section"; continue; fi
+      echo "$sec" | grep -q '^Status: done *$' || echo "04-run.md: Slice $n is not Status: done"
+      echo "$sec" | grep -Eq '^Commit: *[^ ]' || echo "04-run.md: Slice $n has no Commit line"
+    done
+    pv="$(field "version" "$(frontmatter "$plan")")"
+    based="$(list_field "based_on" "$run")"
+    echo "$based" | grep -qx "03-plan.md@$pv" || echo "04-run.md: based_on lacks 03-plan.md@$pv"
+  fi
+  # Any slice not done (including slices not in the plan) fails.
+  if grep -E '^Status: ' "$run" | grep -qvE '^Status: done *$'; then
+    echo "04-run.md: a slice is halted or in progress"
+  fi
+  grep -q '^## Final summary' "$run" || echo "04-run.md: no Final summary"
+  grep -q '^### PR description' "$run" || echo "04-run.md: no PR description"
+}
+
 af="$fixtures_dir/flows/docs/work/2026-10-04-auto-feature"
 if [[ -d "$af" ]]; then
   expect_eq "auto-feature flow" "$(flow_of "$af")" "auto"
@@ -370,6 +402,35 @@ if [[ -d "$af" ]]; then
   mutate_check "text under Open questions" mut_oq
   mutate_check "agents-disagree decision without Human pick" mut_hp
   mutate_check "stale based_on" mut_based
+
+  # run unit: 04-run.md content gates (on a copy, mutating 04-run.md).
+  out="$(run_gate_failures "$af")"
+  [[ -z "$out" ]] && ok "auto-feature passes the run content gates" \
+    || err "auto-feature fails run gates: $out"
+  expect_eq "auto-feature 04-run.md status (finished run, not yet approved)" "$(st "$af/04-run.md")" "draft"
+  run_mutate_check() { # <label> <mutation function>
+    [[ -n "$tmp" ]] || return 0
+    rm -rf "$tmp/m"; cp -R "$af" "$tmp/m"
+    "$2" "$tmp/m/04-run.md"
+    if [[ -n "$(run_gate_failures "$tmp/m")" ]]; then ok "run gates refuse: $1"
+    else err "run gates did not refuse: $1"; fi
+  }
+  mut_halted() { awk '!d && /^Status: done/{print "Status: halted"; d=1; next} {print}' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_noslice() { awk '/^## Slice 2/{skip=1; next} skip && /^## /{skip=0} !skip' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_nosummary() { awk '/^## Final summary/{skip=1; next} skip && /^## /{skip=0} !skip' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_run_oq() { printf '\nShould this ship behind a flag?\n' >> "$1"; }
+  mut_run_based() { sed 's/03-plan.md@1/03-plan.md@0/' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  run_mutate_check "a slice Status: halted" mut_halted
+  run_mutate_check "missing ## Slice N section" mut_noslice
+  run_mutate_check "no ## Final summary" mut_nosummary
+  mut_nopr() { grep -v '^### PR description' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_nocommit() { awk '!d && /^Commit:/{d=1; next} {print}' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_marker() { printf '\nTO""DO later\n' | sed 's/""//' >> "$1"; }
+  run_mutate_check "no ### PR description" mut_nopr
+  run_mutate_check "a slice without a Commit line" mut_nocommit
+  run_mutate_check "a placeholder marker" mut_marker
+  run_mutate_check "text under Open questions" mut_run_oq
+  run_mutate_check "stale based_on" mut_run_based
 fi
 
 if (( fail == 0 )); then

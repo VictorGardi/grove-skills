@@ -1,6 +1,6 @@
 ---
 name: grove-approve
-description: Standalone command to approve a grove artifact later (questions, research, design, structure, design+structure together, or plan in the auto flow). Only load this when the human explicitly types the approve command or explicitly asks to approve a specific artifact — never load it on your own initiative, and never treat any other signal as a request to approve.
+description: Standalone command to approve a grove artifact later (questions, research, design, structure, design+structure together, plan or run in the auto flow). Only load this when the human explicitly types the approve command or explicitly asks to approve a specific artifact — never load it on your own initiative, and never treat any other signal as a request to approve.
 disable-model-invocation: true
 license: MIT
 ---
@@ -25,14 +25,17 @@ resolves what to approve and runs that procedure.
   has no equivalent field, so this rule is the enforcement there.
 - Ticket snapshots and `05-plan.md` (full/standard/small flows) are never
   approved here (that plan is self-approved per slice by `grove-implement`).
-  The `auto` flow's `03-plan.md` is approved only through the `plan` unit.
+  The `auto` flow's `03-plan.md` is approved only through the `plan` unit,
+  and its `04-run.md` only through the `run` unit.
 
 ## Inputs
 
 - The feature slug and the unit: `questions`, `research`,
   `questions+research`, `design`, `structure`, `design+structure`,
   `implementation` (after the last slice; marks the feature done), or
-  `plan` (`auto` flow: outcome + research + plan together).
+  `plan` (`auto` flow: outcome + research + plan together), or `run`
+  (`auto` flow: `04-run.md`, after the final review; run from the run
+  worktree, so cwd = the worktree where `04-run.md` lives).
   If the unit is omitted, propose the one that's pending (e.g. in `standard`
   flow with both drafts present: `design+structure`) and confirm it.
 - `feature.md` (`flow`, `kind`, `children`, `parent`, `order`), the
@@ -50,8 +53,12 @@ gate-satisfying state. The unit rules in `references/approve.md` apply: in
 2. Follow `references/approve.md` from "Procedure" step 1 to the end:
    validate, summarise, ask *"Approve now? (yes / not yet)"*, and on an
    explicit yes apply every effect (frontmatter, stale marking, ADR flips,
-   epic child folders, tracker comment). For `plan` the prompt is a
-   question-tool question, per `references/approve.md`.
+   epic child folders, tracker comment). For `plan` and `run` the
+   prompt is a question-tool question, per `references/approve.md`. For `run`,
+   read `04-run.md` from the current worktree (cwd), not the main checkout,
+   but resolve the CURRENT plan commit and version in the main checkout (first
+   entry of `git worktree list --porcelain`), per `references/approve.md`; the
+   stale check cannot be forced.
 
 ## Output
 

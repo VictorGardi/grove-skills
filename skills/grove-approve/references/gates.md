@@ -47,6 +47,22 @@ Never bypass silently.
   the old one. The `plan` unit cannot be
   approved while `03-plan.md`'s `based_on` is behind the current versions of
   `01-outcome.md` or `02-research.md`.
+- Run approval gate (`grove-approve <slug> run`, run from the run worktree,
+  where `04-run.md` lives): the content gates are the `run` ones in
+  `references/approve.md` (Procedure, step 1), re-run at approval and never
+  skipped; `plan` must be approved. Staleness: the CURRENT plan is resolved
+  in the MAIN checkout (first entry of `git worktree list --porcelain`), not
+  the worktree: current plan commit = `git -C <main checkout> log -1
+  --format=%H -- <artifactRoot>/<slug>/03-plan.md`, current version = the
+  `version` of `<main checkout>/<artifactRoot>/<slug>/03-plan.md`. A run whose
+  `Plan commit:` differs or whose `based_on` lacks `03-plan.md@<that
+  version>` is stale and never approved; the human starts a new run with
+  `grove-run`. Neither the stale check nor the plan-approved precondition can
+  be overridden with `--force`. Every slice also needs a commit on the run
+  branch with subject `<slug>: slice N — <outcome>` (`git log --format=%s
+  <plan-commit>..HEAD` in the worktree); the `Commit:` line alone is not
+  proof. `04-run.md` is approved only via
+  `grove-approve <slug> run`.
 - An `auto` feature has no `03-design.md`, `04-structure.md`, `05-plan.md`
   or `06-implementation.md`. Its artifacts are `01-outcome.md`,
   `02-research.md`, `03-plan.md` and `04-run.md`.

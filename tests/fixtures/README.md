@@ -53,9 +53,11 @@ plus these specific outcomes:
 | `2026-10-02-not-yet` | `standard` | the combined prompt was answered "not yet": both files `draft`, no `approved_at` | closed | — |
 | `2026-10-03-small-size-m` | `small` | flow switched to `small` (logged) but size verdict is M | closed | — |
 | `2026-10-03-full-structure-draft` | `full` | design approved, structure still `draft` | closed | — |
-| `2026-10-04-auto-feature` | `auto` | approved plan bundle (outcome + research + plan, same `approved_at`); one agents-disagree decision with a recorded human pick; no design/structure/plan files | n/a (`grove-run` gate open) | — |
+| `2026-10-04-auto-feature` | `auto` | approved plan bundle (outcome + research + plan, same `approved_at`); one agents-disagree decision with a recorded human pick; `04-run.md` is a finished-run snapshot (`draft`, both slices done; in real use it lives in the run worktree on the run branch); no design/structure/plan files | n/a (`grove-run` gate open) | — |
 
 `validate-fixtures.sh` also mutates a temporary copy of the `auto` fixture
 (drops a `Pick:`, the `Thin end-to-end:` line or a `Human pick:`, fills
 `## Open questions`, makes `based_on` stale) and checks that the plan gates
-refuse each time.
+refuse each time. It does the same for the run gates on `04-run.md` (a halted
+slice, a missing `## Slice N`, no `## Final summary`, filled
+`## Open questions`, stale `based_on`).

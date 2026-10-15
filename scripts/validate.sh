@@ -139,6 +139,12 @@ for role in cto researcher planner reviewer implementer; do
   grep -q "\"$role\"" "$schema" || err "shared/config.schema.json does not name role '$role'"
 done
 
+# The run approval unit: named in the units table and in grove-approve.
+grep -Eq '^\| `run` \|' "$repo_root/shared/approve.md" \
+  || err "shared/approve.md: units table has no row for the 'run' unit"
+grep -q '`run`' "$repo_root/skills/grove-approve/SKILL.md" \
+  || err "skills/grove-approve/SKILL.md does not name the 'run' unit"
+
 if ! bash "$repo_root/scripts/validate-fixtures.sh"; then
   fail=1
 fi
