@@ -75,6 +75,7 @@ An updated `## Spikes` section in the target `02-research.md`, bumping its
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Spike code is never merged, never reviewed as if it were real, and never
   left running after the session — confirm deletion explicitly, don't assume.
 - The finding must be written into the artifact before the session ends —

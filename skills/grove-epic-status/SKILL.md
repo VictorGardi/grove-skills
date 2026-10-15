@@ -78,6 +78,7 @@ A status report printed to the session — no files written.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Never write or modify any artifact, including the epic's own `feature.md`.
 - Never approve, revise, or otherwise act on a finding — only report it and
   name the skill that would act on it (e.g. "child-2 is stale — re-run

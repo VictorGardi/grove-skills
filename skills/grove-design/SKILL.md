@@ -178,6 +178,7 @@ entries.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - One one-way decision per turn, always. Never batch multiple one-way
   decisions into a single question.
 - Never ask about something the research or codebase already answers.

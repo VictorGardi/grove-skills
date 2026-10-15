@@ -81,6 +81,7 @@ None. This is the entry point.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Idempotent: running this twice must not duplicate the `AGENTS.md` block or
   recreate existing files.
 - This skill never touches feature artifacts.

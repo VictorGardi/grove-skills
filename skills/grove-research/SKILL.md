@@ -58,6 +58,7 @@ Those in `references/research-process.md` (staleness, never fabricating).
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Zero recommendations anywhere in this artifact.
 - End the session telling the human: the artifact path (and its `.html`),
   to skim and correct any wrong facts (not opinions), its approval state,

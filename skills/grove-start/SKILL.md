@@ -102,6 +102,7 @@ to an epic child, per `references/gates.md`.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Blindness holds even though this session saw the ticket: subagents get
   question text only, and a subagent writes `02-research.md`.
 - Never run design or structure from this skill, and never ask design

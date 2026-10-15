@@ -62,6 +62,7 @@ flipped ADRs, and for an epic structure the child folders and `children:`.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Never self-invoke, under any framing.
 - Approval always requires an explicit "yes" or "approve" from the human in
   this session, even if they pre-authorized `--force`.

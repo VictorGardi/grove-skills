@@ -138,6 +138,7 @@ whether to continue anyway — never block (`references/gates.md`).
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Never ask a question the codebase or ADRs can already answer.
 - Research questions must stay neutral — review them yourself for leading
   phrasing before finalizing.

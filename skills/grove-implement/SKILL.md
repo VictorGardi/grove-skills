@@ -118,6 +118,7 @@ and (at the end) the PR description.
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Never silently edit `03-design.md` or `04-structure.md`. The only edit
   this skill makes to the design is the escalation in
   `references/slice-plan.md` (open question + `draft`), and only while

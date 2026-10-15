@@ -67,6 +67,7 @@ many slices or children).
 
 ## Rules
 
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Never begin writing implementation code from this skill.
 - End the session telling the human: the artifact path (and `.html`), its
   approval state, and the exact next command — `grove-implement <slug>` in a

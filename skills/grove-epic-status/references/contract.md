@@ -246,6 +246,10 @@ stable cross-file reference.
    validation, frontmatter, stale marking, ADR flips, epic child creation —
    lives in `shared/approve.md` (each skill's `references/approve.md`), used
    both inline at the end of a gated skill and by `grove-approve`.
+9. **Asking the human.** Every skill asks the human only through the question
+   tool (`AskUserQuestion` in Claude, the equivalent in other agents), one
+   question at a time, with the background and a recommendation, never as plain
+   chat text. Approval prompts included (options: yes / not yet).
 
 ## Per-repo config
 
