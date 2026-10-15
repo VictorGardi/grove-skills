@@ -17,11 +17,11 @@ Profile: inherit
 Branch: run/2026-10-04-auto-feature-inherit
 Plan commit: 7c1e9a47d3b25f08a6e1c94b0d2f7385ae61c9d0
 Roles:
-- cto: inherit
-- researcher: inherit
-- planner: inherit
-- reviewer: inherit
-- implementer: inherit
+- cto: claude, inherit
+- researcher: claude, inherit
+- planner: claude, inherit
+- reviewer: claude, inherit
+- implementer: claude, inherit
 
 ## Slice 1
 

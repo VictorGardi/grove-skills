@@ -23,11 +23,11 @@ Profile: <profile or inherit>
 Branch: <branch>
 Plan commit: <sha>
 Roles:
-- cto: <model or inherit>
-- researcher: <model or inherit>
-- planner: <model or inherit>
-- reviewer: <model or inherit>
-- implementer: <model or inherit>
+- cto: <agent>, <model or inherit>
+- researcher: <agent>, <model or inherit>
+- planner: <agent>, <model or inherit>
+- reviewer: <agent>, <model or inherit>
+- implementer: <agent>, <model or inherit>
 
 ## Slice <N>
 

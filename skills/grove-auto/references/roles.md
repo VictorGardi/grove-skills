@@ -73,7 +73,8 @@ runs on that agent's own default model.
   - OpenCode: see "In OpenCode".
 - **Child session** (the `planner` of a `grove-run` slice): run
   `grove new <planner agent> ... --model <planner model>`; omit `--model` when
-  the planner inherits. Both `claude` and `opencode` accept `--model`.
+  the planner inherits. Both `claude` and `opencode` accept `--model`. The child learns each role's
+  agent from the `Agents:` line of its prompt.
 - **Your own session** (`grove-auto`, the `grove-run` parent) keeps the model
   the human started it with; it never relaunches itself.
 
@@ -87,21 +88,25 @@ runtime actually used.
 model. A subagent's model comes from its agent file, so the skill writes one
 per role, once, after resolving the roles and before the first subagent:
 
-1. For each subagent role the session spawns that has a resolved model (for `grove-run`'s child, the `Roles:` line of its prompt), write
+1. First delete any existing `.opencode/agent/grove-*.md`, so a profile switch
+   leaves nothing stale. Then, for each subagent role the session spawns that has a resolved model (for `grove-run`'s child, the `Roles:` line of its prompt), write
    `.opencode/agent/grove-<role>.md` in the session's working directory:
    frontmatter `description` (one line naming the role), `mode: subagent`,
    `model: <role model>`; body one line: you play the `<role>` role, follow the
    task prompt, you cannot reach the human. `grove-` is a reserved
-   prefix for these files: first delete any existing `.opencode/agent/grove-*.md`,
-   so a profile switch leaves nothing stale.
+   prefix for these files.
 2. Add the line `.opencode/agent/grove-*.md` once (no duplicates) to the file
-   printed by `git rev-parse --git-path info/exclude`, creating or appending,
+   printed by `git rev-parse --git-path info/exclude`, creating or appending
+   through the shell (`printf`/`grep -qxF … || echo … >>`), not the edit tool: in a
+   linked worktree that file is in the main checkout, outside the working
+   directory, and the edit tool would hit the `external_directory` ask,
    so the files are never committed and `git status` stays clean. `.git/info` may
    need creating.
 3. `opencode debug agents` reads a shared service that notices file changes
    late: a new file can be missing, or a changed `model` show the old value, for
    a few calls. Poll it about once a second, up to about 10 tries, until every
-   generated `grove-<role>` is listed with the model that was written (a stale
+   generated `grove-<role>` is listed with the model that was written (in the
+   JSON, `model` is an object: compare `model.providerID` + `/` + `model.id`) (a stale
    file in a parent directory can also be listed; OpenCode loads agent files
    from parent directories too). An agent whose `model` is not in
    `provider/model` form is silently left out of the list, which this check

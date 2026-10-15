@@ -15,8 +15,8 @@ ends its turn until it reports, and checks the result in git. The human is
 asked only after slice 1, after every slice with `--review-each`, and after
 the last slice (continue, fix with a comment, or stop); other slices run
 unattended. A profile (`--profile P` or the config's `profile`) sets
-the model per role (`references/roles.md`); the child is launched with the
-`planner` model. `--continue` (parent mode only) resumes a stopped run per
+the agent and model per role (`references/roles.md`); the child is launched
+as the `planner`'s agent with the `planner` model. `--continue` (parent mode only) resumes a stopped run per
 `references/continue.md`. With `--slice N` the skill is the child: load
 `references/slice-mode.md` and follow only it.
 
@@ -53,7 +53,7 @@ Parent mode, all required (`--force` is not available here):
 ## Process
 
 1. **Resolve.** With `--continue`, follow `references/continue.md` instead of
-   the rest of this step (never create a new branch with `--continue`). Resolve the roles per `references/roles.md` (`--profile P`, else
+   the rest of this step (never create a new branch with `--continue`). Resolve each role's agent and model per `references/roles.md` (`--profile P`, else
    the config's `profile`, else `inherit`); an unknown profile or an
    unsupported agent stops the skill. Plan commit =
    `git log -1 --format=%H -- <artifactRoot>/<slug>/03-plan.md`. Branch =
@@ -78,10 +78,13 @@ Parent mode, all required (`--force` is not available here):
    number of sessions in `grove ls --all --json` whose label starts with
    `<branch>-slice-<n>-a`. Child prompt: "Load the grove-run skill and follow
    it exactly. Arguments: <slug> --slice <N> --profile <P>" plus the lines `Label: <label>`,
-   `Parent: <id>` and
+   `Parent: <id>`,
    `Roles: cto=<m|inherit> researcher=<m|inherit> planner=<m|inherit> reviewer=<m|inherit> implementer=<m|inherit>`
-   (resolved, one token per role, in that order), where id is the current value of `$GROVE_SESSION_ID` (expanded, no angle brackets or variable name in the prompt). Start the child without `--wait`.
-   - No worktree yet (slice 1): `grove new claude --child --worktree --branch <branch> --base <plan-commit> --label <label> [--model <planner model>] --prompt "<child prompt>"`
+   and `Agents: cto=<agent> researcher=<agent> planner=<agent> reviewer=<agent> implementer=<agent>`
+   (resolved, one token per role, in that order; a subagent role without
+   `agent` gets the planner's agent, the planner without `agent` the parent's
+   own agent), where id is the current value of `$GROVE_SESSION_ID` (expanded, no angle brackets or variable name in the prompt). Start the child without `--wait`.
+   - No worktree yet (slice 1): `grove new <planner agent> --child --worktree --branch <branch> --base <plan-commit> --label <label> [--model <planner model>] --prompt "<child prompt>"`
    - Whenever the worktree exists (later slices, and every slice on resume,
      slice 1 included): the same without `--worktree`, `--branch`, `--base`,
      and with `--cwd <worktree>`. In both forms `--model <planner model>` is
@@ -133,10 +136,18 @@ Parent mode, all required (`--force` is not available here):
    - The slice-1 summary also lists the Bash command prefixes the parent needs
      allowed so later slices do not stall: `grove new`, `grove send`,
      `grove kill`, `grove ls`, `grove read`, `git -C <worktree>`. Say plainly
-     that the run uses the human's own Claude permission settings (a repo
-     without pre-approved edits and project commands halts at the first
-     prompt), and that they can allow those prefixes ("don't ask again")
-     before answering continue.
+     that the run uses the human's own permission settings for the agent that
+     runs it (Claude: a repo without pre-approved edits and project commands
+     halts at the first prompt; OpenCode: its `permission` config, below), and
+     that for the children it is the children's agent (the planner's) that
+     matters, and that they can allow those prefixes ("don't ask again")
+     before answering continue. In OpenCode, permissions come from the human's
+     OpenCode `permission` config: the default allows edits and shell but asks
+     for `external_directory` and `.env` reads, and an unattended run stops at
+     any `ask`, so set `allow` for what the run needs (the `grove` and `git`
+     commands, the project's commands). Grove never starts OpenCode with `--auto` (and `opencode mini` has none),
+     so only the `permission` config decides. A question in a child still halts
+     the run (the question tool there is `question`).
    - Ask through the question tool, one question, options *continue*, *fix
      with a comment*, *stop* (last slice: *finish*, *fix with a comment*,
      *stop*). A one-slice plan has slice 1 as the last slice: its gate is the
@@ -167,7 +178,7 @@ Parent mode, all required (`--force` is not available here):
    is killed, print the hand-off as the final message:
    the worktree path and branch; that `04-run.md` lives there with its
    `## Final summary`; a ready-to-paste line with real values filled in,
-   `grove new claude --cwd <worktree> --prompt "/grove-approve <slug> run"`;
+   `grove new <the parent's own agent> --cwd <worktree> --prompt "/grove-approve <slug> run"`;
    and the steps after approval: commit the approved `04-run.md` on the run
    branch as `<slug>: approve run`, then merge or open a PR using the PR
    description from the final summary. The parent approves nothing.

@@ -16,7 +16,7 @@ expected (the failing code is uncommitted), never clean it.
    stale run is never continued.
    Profile = the `Profile:` line in `04-run.md` (preferred; the branch suffix only if
    absent), not the config.
-   Resolve the roles for that profile per `references/roles.md` (for the `Roles:` line).
+   Resolve the roles for that profile per `references/roles.md` (for the `Roles:` and `Agents:` lines), taking the agents from the `04-run.md` header of the run being continued rather than re-resolving, so the planner's agent never changes mid-run.
    `--review-each` must be given again; it is not remembered.
 2. **Lost report.** Before picking N: HEAD subject = `git -C <worktree> log -1
    --format=%s`. If it is `<slug>: slice M — <outcome>` for a slice M whose gate is still
@@ -56,7 +56,7 @@ expected (the failing code is uncommitted), never clean it.
    `grove-approve <slug> plan`). Start nothing and end the turn.
 6. **Otherwise** start a fresh child for slice N (label per `SKILL.md` step 2, `--cwd
    <worktree>`, same prompt as `SKILL.md` step 2 plus the line `Decision: <option title and
-   text>`; launched with the `planner` model as usual, never `--worktree`/`--branch`/
+   text>`; launched with the `planner` model and as the planner's agent as usual, never `--worktree`/`--branch`/
    `--base`). The child does the `git reset --soft HEAD~1` of the halt commit, records
    `Decision:` in the slice section and ends as exactly one `slice N —` commit (the halt
    commit is folded in). Then end the turn like `SKILL.md` step 3.
