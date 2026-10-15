@@ -19,6 +19,10 @@ Never anywhere else, and never on the model's own initiative: not as a side
 effect of another step, not because an artifact "looks ready", and not when
 resuming a session. A skill may *offer* approval only at its own inline step.
 
+`grove-auto` and `grove-run` never approve inline: they end by naming
+`grove-approve <slug> plan`. Approval of `plan` happens only via
+`grove-approve`.
+
 ## What counts as approval
 
 Only an explicit **"yes"** or **"approve"** (e.g. "yes", "approve",
@@ -42,9 +46,12 @@ if any file fails, nothing in the unit is approved.**
 | `structure` | `04-structure.md` | `full` flow; `standard` flow only when `03-design.md` is already `approved` (a structure revised after the combined approval) |
 | `design+structure` | `03-design.md`, `04-structure.md` | `standard` flow — atomic |
 | `implementation` | `06-implementation.md` | after the last slice, all flows; never on an epic — approving it marks the feature done |
+| `plan` | `01-outcome.md`, `02-research.md`, `03-plan.md` | `auto` flow only — atomic, all-or-none; approving it unlocks `grove-run` |
 
 Rules:
 
+- **`plan`** is the only unit in `auto` flow in this version. For an `auto`
+  feature any other unit is refused with a one-line message.
 - **`standard` flow never approves the design alone.** A request to approve
   `design` in `standard` flow is treated as `design+structure`. If
   `04-structure.md` doesn't exist yet, say so and stop — the design session
@@ -72,6 +79,10 @@ Rules:
    - implementation: every slice in `04-structure.md` (`small` flow: every
      slice in `05-plan.md`) has a `## Slice N` section in `05-plan.md`, and
      `05-plan.md` has no `- [ ]` left
+   - plan: each of the three files has complete frontmatter and an empty
+     `## Open questions`; no literal TODO/TBD; every decision in
+     `03-plan.md` has a `Pick:`; every slice in `03-plan.md` has a
+     `Verification`
    If any check fails, list exactly what fails and stop — do not ask for
    approval. `--force <reason>` may override a failing check; record the
    reason in that file's `forced` array, and still ask for the yes.
@@ -79,7 +90,10 @@ Rules:
    unlocks next (e.g. "unlocks `grove-implement`"), and anything that will be
    marked `stale` as a result.
 3. **Ask exactly:** *"Approve now? (yes / not yet)"*. For `questions+research`
-   you may add a third answer, *"questions only"*. Then wait.
+   you may add a third answer, *"questions only"*. The prompt is a question-tool question (`references/contract.md` rule 9):
+   options "Approve now" and "Not yet", the literal `Approve now? (yes / not yet)`
+   stays in the question text. Then
+   wait.
 4. **On not yet** (anything other than an explicit yes/approve): write
    nothing approval-related. Every file in the unit stays `draft`. Tell the
    human the command to approve later: `grove-approve <slug> <unit>`. If they
@@ -92,7 +106,8 @@ Rules:
    last file* `status: stale` — e.g. approving `design+structure` marks an
    existing `05-plan.md` and `06-implementation.md` stale; approving `design`
    in `full` flow marks `04-structure.md` onward stale. `implementation` is
-   the last artifact, so it marks nothing stale. Wholesale per feature,
+   the last artifact, so it marks nothing stale. `plan` marks nothing stale in
+   this version. Wholesale per feature,
    except:
    - **Epic design, re-approval after a revision:** targeted stale marking on
      children, per `references/gates.md` ("Targeted stale marking"). An

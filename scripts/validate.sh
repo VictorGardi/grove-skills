@@ -76,6 +76,11 @@ for skill_dir in "$skills_dir"/*/; do
     fi
   fi
 
+  # every skill tells agents to ask through the question tool.
+  if ! grep -q 'AskUserQuestion' "$skill_md"; then
+    err "$skill_name: SKILL.md does not tell agents to ask through the question tool (AskUserQuestion)"
+  fi
+
   # matching command wrapper
   if [[ ! -f "$commands_dir/$skill_name.md" ]]; then
     err "$skill_name: no matching commands/$skill_name.md wrapper"
@@ -110,6 +115,17 @@ fi
 # grove-plan was removed; nothing may point at it.
 if hits="$(grep -rl 'grove-plan' "$skills_dir" "$commands_dir" "$repo_root/shared" 2>/dev/null)" && [[ -n "$hits" ]]; then
   err "references the removed grove-plan skill: $(echo $hits)"
+fi
+
+# No model names in the auto-flow skills.
+auto_dirs=()
+for s in grove-auto grove-run; do
+  [[ -d "$skills_dir/$s" ]] && auto_dirs+=("$skills_dir/$s")
+done
+if (( ${#auto_dirs[@]} > 0 )); then
+  if hits="$(grep -rEliw 'opus|sonnet|haiku|fable' "${auto_dirs[@]}" 2>/dev/null)" && [[ -n "$hits" ]]; then
+    err "names a model in grove-auto/grove-run: $(echo $hits)"
+  fi
 fi
 
 if ! bash "$repo_root/scripts/validate-fixtures.sh"; then

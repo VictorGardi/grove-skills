@@ -47,7 +47,7 @@ without `kind` count as features) or `kind: epic`.
 
 ## Flows
 
-Every feature runs in one of three flows, recorded as `flow` in
+Every feature runs in one of four flows, recorded as `flow` in
 `feature.md`. The flow decides which sessions run and where the human stops;
 the artifacts and their format are the same in every flow.
 
@@ -56,9 +56,11 @@ the artifacts and their format are the same in every flow.
 | `full` | `grove-start` → `grove-design` → `grove-structure` → `grove-implement` | start (skim) → design → structure → each slice |
 | `standard` | `grove-start` → `grove-design` (writes design **and** structure) → `grove-implement` | start (skim) → design + structure (one review) → each slice |
 | `small` | `grove-start` (questions only) → `grove-implement` | questions → each slice |
+| `auto` | `grove-auto` (outcome interview, research map, plan) → `grove-run` (parent starts one child session per slice, one commit per slice) | outcome play-back → plan approval → after slice 1 |
 
 An epic is always `full` and stops after structure: its implementation
-happens in its children.
+happens in its children. An epic is never `auto`. `auto` is never proposed by
+`grove-questions`: the human starts it with `grove-auto`.
 
 **Proposed flow.** `grove-questions` proposes a flow from its size verdict
 and the human confirms or changes it:
@@ -108,6 +110,12 @@ combined approval now come before `grove-implement` can continue.
 | `04-structure.md` (+ `.html`) | grove-structure (`full`); grove-design (`standard`) (not in `small` flow) | careful, ≤ ~2 pages |
 | `05-plan.md` | grove-implement, one slice at a time, just before executing it | none — agent-facing, self-checked (epics: not produced) |
 | `06-implementation.md` | grove-implement; approved by the human after the last slice (`grove-approve <slug> implementation`) | per slice (epics: not produced) |
+| `01-outcome.md` | grove-auto (`auto` flow only) | plain-language Outcome Brief; the human reviews it at the play-back |
+| `03-plan.md` | grove-auto (`auto` flow only) | Decisions + Slices; approved with the outcome and research (`plan` unit) |
+| `04-run.md` | grove-run children (`auto` flow only); lives in the run's worktree on the run branch | after slice 1; not approved in this version |
+
+An `auto` feature has no `01-questions.md`, `03-design.md`, `04-structure.md`,
+`05-plan.md` or `06-implementation.md`.
 
 An approved `06-implementation.md` marks the feature **done**. Nothing else
 does: a fully ticked `05-plan.md` only means the slices ran.
@@ -129,7 +137,7 @@ parent: ""                # feature only, child of an epic: the epic's slug
 children: []               # epic only: ordered list of child slugs, written by grove-approve
 appetite: ""               # epic: required. feature: optional free-text time budget
 order: 0                   # child only: position in the epic's order (1 = walking skeleton)
-flow: standard             # full | standard | small (missing = full); see "Flows"
+flow: standard             # full | standard | small | auto (missing = full); see "Flows"
 created: 2026-10-04
 ---
 ```
@@ -154,7 +162,7 @@ and filled in by `grove-questions`:
 ```yaml
 ---
 feature: ENG-123-retry-queue
-phase: design            # questions|research|design|structure|plan|implementation
+phase: design            # outcome|questions|research|design|structure|plan|run|implementation
 status: draft            # draft|approved|stale
 version: 3               # bump on every substantive edit
 created: 2026-10-04
@@ -170,6 +178,16 @@ repo_heads:              # 02-research.md only: VCS ref(s) read, e.g. git rev-pa
   - abc1234
 ---
 ```
+
+## `auto` flow artifacts
+
+- `01-outcome.md` carries the standard frontmatter (`phase: outcome`,
+  `status`, `version`, `based_on: []`, `forced`) and ends with an empty
+  `## Open questions`.
+- `03-plan.md` has `phase: plan` and `based_on` listing `01-outcome.md@<v>`
+  and `02-research.md@<v>`.
+- The `plan` approval unit (see `references/approve.md`) approves the three
+  files at once.
 
 ## `05-plan.md`: one slice at a time
 
