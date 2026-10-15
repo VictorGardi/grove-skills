@@ -70,40 +70,40 @@
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "agent": { "type": "string", "default": "claude" },
-                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+                "agent": { "type": "string", "description": "`claude` or `opencode`." },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias for claude, provider/model for opencode, passed unchanged." }
               }
             },
             "researcher": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "agent": { "type": "string", "default": "claude" },
-                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+                "agent": { "type": "string", "description": "`claude` or `opencode`." },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias for claude, provider/model for opencode, passed unchanged." }
               }
             },
             "planner": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "agent": { "type": "string", "default": "claude" },
-                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+                "agent": { "type": "string", "description": "`claude` or `opencode`." },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias for claude, provider/model for opencode, passed unchanged." }
               }
             },
             "reviewer": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "agent": { "type": "string", "default": "claude" },
-                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+                "agent": { "type": "string", "description": "`claude` or `opencode`." },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias for claude, provider/model for opencode, passed unchanged." }
               }
             },
             "implementer": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "agent": { "type": "string", "default": "claude" },
-                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+                "agent": { "type": "string", "description": "`claude` or `opencode`." },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias for claude, provider/model for opencode, passed unchanged." }
               }
             }
         }

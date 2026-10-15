@@ -6,7 +6,7 @@ this file. The `04-run.md` layout is in `references/run-template.md`.
 
 ## Rules
 
-- Never ask the human, not even through the question tool (`AskUserQuestion`): a question in a child stops the run. If you are unsure or cannot finish, halt (see Halt). Tell every subagent the same.
+- Never ask the human, not even through the question tool (`AskUserQuestion` (`question` in OpenCode)): a question in a child stops the run. If you are unsure or cannot finish, halt (see Halt). Tell every subagent the same.
 - Plan the slice yourself, build it through `implementer` subagents, review it through a fresh `reviewer` subagent. Subagents never get the parent id and never run `grove send`.
 - Never end your turn while a subagent is outstanding: await every one first.
 - One commit per slice, plus the halt commit when you halt (see Halt). Never end your turn before the commit exists and the report is sent.
@@ -52,15 +52,21 @@ this file. The `04-run.md` layout is in `references/run-template.md`.
    write `### Slice plan`: a `Found in the code:` paragraph, then for each
    `implementer` subagent a checkbox list of concrete steps with file paths, then a
    `Models passed:` line (role: model per subagent role you will use, `inherit` where so).
+   In OpenCode, once `Roles:` is read, run the generation recipe ("In OpenCode" in
+   `references/roles.md`) in the run worktree before step 5.
 5. **Build.** Delegate each chunk to an `implementer` subagent through the Agent tool
    (general-purpose subagent type; `model` = the implementer's value on the `Roles:`
-   line, omitted when it is `inherit`). Run independent chunks in parallel, on disjoint
+   line, omitted when it is `inherit`); in OpenCode the `subagent` tool with
+   `agent: grove-implementer` (or `general` when it inherits), no model, per
+   `references/roles.md`. Run independent chunks in parallel, on disjoint
    files. Each prompt carries the slice plan chunk, the files, the plan's Decisions
    that apply, and ends with "you cannot reach the human; return findings, never ask".
    Await all. Then run the slice's **Verification** from `03-plan.md` yourself. If it
    fails and you cannot fix it (through another implementer if needed), halt.
-6. **Review.** Start a FRESH `reviewer` subagent (Agent tool, general-purpose subagent type, `model` = the reviewer's
-   value on the `Roles:` line, omitted when `inherit`). Give it the diff, the slice
+6. **Review.** Start a FRESH `reviewer` subagent through the Agent tool (general-purpose
+   subagent type, `model` = the reviewer's value on the `Roles:` line, omitted when
+   `inherit`); in OpenCode the `subagent` tool with `agent: grove-reviewer` (or `general`
+   when it inherits), no model, per `references/roles.md`. Give it the diff, the slice
    plan, the plan's Decisions and `01-outcome.md`; it returns blocking and non-blocking
    findings and cannot ask the human. Blocking findings get up to 2 fix rounds: an
    `implementer` fixes, you re-run Verification, a fresh `reviewer` re-reviews. If it still

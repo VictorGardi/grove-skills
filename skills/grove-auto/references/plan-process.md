@@ -97,7 +97,8 @@ placeholder markers anywhere.
 ## Reviewer prompt template
 
 A fresh `reviewer` subagent every round (read-only; pass the role's resolved
-`model` on the Agent call, omitted when it inherits):
+`model` on the Agent call, omitted when it inherits; in OpenCode: `subagent` tool,
+see `references/roles.md`):
 
 > You are the `reviewer`. Read `<artifactRoot>/<slug>/01-outcome.md`,
 > `02-research.md` and `03-plan.md`. Limits: at most <maxOneWayDecisions>
@@ -119,7 +120,8 @@ independent.
 ## CTO check prompt template
 
 A fresh `cto` subagent, outcome only (pass the role's resolved `model` on the
-Agent call, omitted when it inherits):
+Agent call, omitted when it inherits; in OpenCode: `subagent` tool, see
+`references/roles.md`):
 
 > You are the `cto`. Read `01-outcome.md` and `03-plan.md`. Check the plan
 > against the Outcome Brief point by point: each line of "How I'll know it

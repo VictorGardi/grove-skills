@@ -35,7 +35,7 @@ None beyond the config. Nothing here is approved by this skill.
 
 ## Process
 
-Resolve the roles per `references/roles.md` (`--profile P` if given); an unknown profile or an unsupported agent stops the skill. The planner is this session: no relaunch. Pass each role's resolved `model` on every Agent call, omitted when the role inherits.
+Resolve the roles per `references/roles.md` (`--profile P` if given); an unknown profile or an unsupported agent stops the skill. The planner is this session: no relaunch. Pass each role's resolved `model` on every Agent call, omitted when the role inherits (in OpenCode: `subagent` tool, see `references/roles.md`; the agent files of "In OpenCode" are generated right after resolving the roles).
 
 If `<artifactRoot>/<slug>/03-plan.md` exists, go to step 10.
 
@@ -43,7 +43,7 @@ If `<artifactRoot>/<slug>/03-plan.md` exists, go to step 10.
    `<artifactRoot>/<slug>/`, write `feature.md` (`flow: auto`, `created`, and a
    `## Flow log` with `- <date>: auto (chosen by running grove-auto)`) and
    `00-ticket.md` with the ticket verbatim.
-2. **Research.** Spawn two general-purpose subagents in the `researcher`
+2. **Research.** Spawn two general-purpose subagents (OpenCode: `subagent` tool, `references/roles.md`) in the `researcher`
    role in parallel, read-only, facts only, split by the areas the ticket touches (for
    example one per repo or area; if it touches one area, split it by layer).
    Each returns a short code map of its area and how to run the project's
@@ -131,9 +131,9 @@ in `<artifactRoot>/<slug>/`.
 
 ## Rules
 
-- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents; `question` in OpenCode, see `references/roles.md`), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Nothing lives only in chat: every answer is written to a file as it arrives.
-- Name roles only (`cto`, `researcher`, `planner`, `reviewer`, `implementer`); never model names. Every `researcher`, `cto` and `reviewer` spawn passes the role's resolved `model` on the Agent call (omit it when the role inherits).
+- Name roles only (`cto`, `researcher`, `planner`, `reviewer`, `implementer`); never model names. Every `researcher`, `cto` and `reviewer` spawn passes the role's resolved `model` on the Agent call (omit it when the role inherits; in OpenCode: `subagent` tool, see `references/roles.md`).
 - Subagents cannot reach the human; the planner relays every question. Every subagent prompt ends "you cannot reach the human; return findings, never ask".
 - No placeholder markers anywhere in the artifacts; `## Open questions` ends empty.
 - Only `grove-approve`, invoked by the human, approves. This skill approves nothing.
