@@ -24,8 +24,9 @@ prompts and the round-log format: `references/plan-process.md`.
 
 ## Inputs
 
-`<ticket text or ticket path/ID>`, and `grove.config.json` (`artifactRoot`,
-`limits`, `commands`). If it is missing, tell the human to run `grove-setup`
+`<ticket text or ticket path/ID>` with an optional `--profile P`, and
+`grove.config.json` (`artifactRoot`, `limits`, `commands`, `profile`,
+`profiles`). If it is missing, tell the human to run `grove-setup`
 and stop.
 
 ## Preconditions & gates
@@ -34,14 +35,16 @@ None beyond the config. Nothing here is approved by this skill.
 
 ## Process
 
+Resolve the roles per `references/roles.md` (`--profile P` if given); an unknown profile or an unsupported agent stops the skill. The planner is this session: no relaunch. Pass each role's resolved `model` on every Agent call, omitted when the role inherits.
+
 If `<artifactRoot>/<slug>/03-plan.md` exists, go to step 10.
 
 1. **Set up.** Derive the slug per `references/contract.md`, create
    `<artifactRoot>/<slug>/`, write `feature.md` (`flow: auto`, `created`, and a
    `## Flow log` with `- <date>: auto (chosen by running grove-auto)`) and
    `00-ticket.md` with the ticket verbatim.
-2. **Research.** Spawn two general-purpose subagents in the `researcher` role in
-   parallel, read-only, facts only, split by the areas the ticket touches (for
+2. **Research.** Spawn two general-purpose subagents in the `researcher`
+   role in parallel, read-only, facts only, split by the areas the ticket touches (for
    example one per repo or area; if it touches one area, split it by layer).
    Each returns a short code map of its area and how to run the project's
    commands (`grove.config.json` `commands`, README). They cannot reach the
@@ -130,7 +133,7 @@ in `<artifactRoot>/<slug>/`.
 
 - Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
 - Nothing lives only in chat: every answer is written to a file as it arrives.
-- Name roles only (`cto`, `researcher`, `planner`, `reviewer`, `implementer`); never model names.
+- Name roles only (`cto`, `researcher`, `planner`, `reviewer`, `implementer`); never model names. Every `researcher`, `cto` and `reviewer` spawn passes the role's resolved `model` on the Agent call (omit it when the role inherits).
 - Subagents cannot reach the human; the planner relays every question. Every subagent prompt ends "you cannot reach the human; return findings, never ask".
 - No placeholder markers anywhere in the artifacts; `## Open questions` ends empty.
 - Only `grove-approve`, invoked by the human, approves. This skill approves nothing.

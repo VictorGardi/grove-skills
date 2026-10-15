@@ -55,6 +55,60 @@
         "build": { "type": "string" }
       }
     },
+    "profile": {
+      "type": "string",
+      "description": "Active profile name; --profile overrides it. Unset means inherit."
+    },
+    "profiles": {
+      "type": "object",
+      "description": "Named profiles: which agent and model plays each role. A missing role inherits.",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+            "cto": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": { "type": "string", "default": "claude" },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+              }
+            },
+            "researcher": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": { "type": "string", "default": "claude" },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+              }
+            },
+            "planner": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": { "type": "string", "default": "claude" },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+              }
+            },
+            "reviewer": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": { "type": "string", "default": "claude" },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+              }
+            },
+            "implementer": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "agent": { "type": "string", "default": "claude" },
+                "model": { "type": "string", "minLength": 1, "description": "Model alias, passed unchanged." }
+              }
+            }
+        }
+      }
+    },
     "limits": {
       "type": "object",
       "additionalProperties": false,

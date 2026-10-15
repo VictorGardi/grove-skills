@@ -1,6 +1,6 @@
 # grove-run: slice mode (child)
 
-You are a child session started by `grove-run` with `<slug> --slice N`. Your
+You are a child session started by `grove-run` with `<slug> --slice N --profile P`. Your
 cwd is the run worktree. Follow only this file.
 
 ## Rules
@@ -17,8 +17,11 @@ cwd is the run worktree. Follow only this file.
 2. **Slice 1 only:** create `04-run.md` with frontmatter `feature`,
    `phase: run`, `status: draft`, `version: 1`, `created`, `updated`,
    `approved_at:` empty, `based_on: [03-plan.md@<version>]`, `forced: []`, and a
-   header: profile `inherit`, branch (`git branch --show-current`), plan commit
-   (`git rev-parse HEAD`), roles all `inherit`. End the file with
+   header: profile (the `--profile` value of your prompt, `inherit` if none),
+   branch (`git branch --show-current`), plan commit (`git rev-parse HEAD`),
+   roles (the `Roles:` line of your prompt is `role=model`; record it as
+   `role: model` entries, a role that inherits written `inherit`). Use ONLY
+   the `Roles:` line for models; never re-resolve the profile from config. End the file with
    `## Open questions`. If the project has no `node_modules` or similar and a
    documented install command exists (README, AGENTS.md), run it; if you cannot
    tell, continue.

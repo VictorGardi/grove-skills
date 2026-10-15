@@ -128,6 +128,17 @@ if (( ${#auto_dirs[@]} > 0 )); then
   fi
 fi
 
+# Profiles: the schema parses and declares profile/profiles; the five roles
+# appear in shared/roles.md and in the schema.
+schema="$repo_root/shared/config.schema.json"
+if ! python3 -c 'import json,sys; d=json.load(open(sys.argv[1])); assert "profile" in d["properties"] and "profiles" in d["properties"]' "$schema" 2>/dev/null; then
+  err "shared/config.schema.json does not parse or lacks profile/profiles"
+fi
+for role in cto researcher planner reviewer implementer; do
+  grep -qw "$role" "$repo_root/shared/roles.md" || err "shared/roles.md does not name role '$role'"
+  grep -q "\"$role\"" "$schema" || err "shared/config.schema.json does not name role '$role'"
+done
+
 if ! bash "$repo_root/scripts/validate-fixtures.sh"; then
   fail=1
 fi

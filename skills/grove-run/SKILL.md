@@ -10,8 +10,11 @@ license: MIT
 
 Execution half of the `auto` flow. The parent (this skill, run from the main
 checkout) starts one child Grove session per slice in a worktree on branch
-`run/<slug>-inherit`, starts it and ends its turn until it reports, checks the
-result in git, and asks the human whether to continue. With `--slice N` the skill is the child: load
+`run/<slug>-<profile>` (profile `inherit` when none is active), starts it and
+ends its turn until it reports, checks the result in git, and asks the human
+whether to continue. A profile (`--profile P` or the config's `profile`) sets
+the model per role (`references/roles.md`); the child is launched with the
+`planner` model. With `--slice N` the skill is the child: load
 `references/slice-mode.md` and follow only it.
 
 ## When to use / not use
@@ -22,8 +25,8 @@ result in git, and asks the human whether to continue. With `--slice N` the skil
 
 ## Inputs
 
-`<slug>` (parent mode) or `<slug> --slice N` (child mode). `grove.config.json`
-(`artifactRoot`).
+`<slug> [--profile P]` (parent mode) or `<slug> --slice N [--profile P]` (child
+mode). `grove.config.json` (`artifactRoot`, `profile`, `profiles`).
 
 ## Preconditions & gates
 
@@ -45,9 +48,12 @@ Parent mode, all required (`--force` is not available here):
 
 ## Process
 
-1. **Resolve.** Plan commit =
+1. **Resolve.** Resolve the roles per `references/roles.md` (`--profile P`, else
+   the config's `profile`, else `inherit`); an unknown profile or an
+   unsupported agent stops the skill. Plan commit =
    `git log -1 --format=%H -- <artifactRoot>/<slug>/03-plan.md`. Branch =
-   `run/<slug>-inherit` (profile is always `inherit`). **Resume** = a worktree
+   `run/<slug>-<profile>`; on resume `--profile` selects which run's branch
+   (without it, the config's active profile, else `inherit`). **Resume** = a worktree
    for that branch already exists (`git worktree list --porcelain`) and has a
    slice not done. Use the `-2`, `-3` suffix only when all slices on the
    existing branch are done, or the branch exists with no worktree. Slices = the
@@ -59,12 +65,15 @@ Parent mode, all required (`--force` is not available here):
 2. **Start the slice.** Label = `<branch>-slice-<n>-a<k>`, where k = 1 plus the
    number of sessions in `grove ls --all --json` whose label starts with
    `<branch>-slice-<n>-a`. Child prompt: "Load the grove-run skill and follow
-   it exactly. Arguments: <slug> --slice <N>" plus the lines `Label: <label>`
-   and `Parent: <id>`, where id is the current value of `$GROVE_SESSION_ID` (expanded, no angle brackets or variable name in the prompt). Start the child without `--wait`.
-   - No worktree yet (slice 1): `grove new claude --child --worktree --branch <branch> --base <plan-commit> --label <label> --prompt "<child prompt>"`
+   it exactly. Arguments: <slug> --slice <N> --profile <P>" plus the lines `Label: <label>`,
+   `Parent: <id>` and
+   `Roles: cto=<m|inherit> researcher=<m|inherit> planner=<m|inherit> reviewer=<m|inherit> implementer=<m|inherit>`
+   (resolved, one token per role, in that order), where id is the current value of `$GROVE_SESSION_ID` (expanded, no angle brackets or variable name in the prompt). Start the child without `--wait`.
+   - No worktree yet (slice 1): `grove new claude --child --worktree --branch <branch> --base <plan-commit> --label <label> [--model <planner model>] --prompt "<child prompt>"`
    - Whenever the worktree exists (later slices, and every slice on resume,
      slice 1 included): the same without `--worktree`, `--branch`, `--base`,
-     and with `--cwd <worktree>`.
+     and with `--cwd <worktree>`. In both forms `--model <planner model>` is
+     added only when the `planner` role has a model; omit it when it inherits.
    - After the first child creates the worktree, the parent finds its path as
      the `git worktree list --porcelain` entry for `<branch>` and uses it for
      later slices and `git -C <worktree>`.
@@ -98,7 +107,7 @@ Parent mode, all required (`--force` is not available here):
 
 ## Output
 
-Commits on `run/<slug>-inherit` in the worktree: one per slice, including
+Commits on `run/<slug>-<profile>` in the worktree: one per slice, including
 `04-run.md`. The parent writes no files.
 
 ## Stop conditions
