@@ -48,6 +48,19 @@ Never bypass silently.
   `02-research.md`, `03-plan.md` and `04-run.md`.
 - `04-run.md` lives in the run worktree, not in the main checkout.
 
+### `auto` review gates
+
+- Slices that gate: slice 1 always, every slice with `--review-each`, and the
+  last slice as the final review. No question is asked at any other slice.
+- At a gate the parent shows a summary: what was built, the review verdict
+  with its fix-round count, the deviations, and where the diff is (the
+  worktree project in the app, one click from the sidebar; not a link).
+- Three answers: continue, fix with a comment, or stop. On the last slice:
+  finish, fix, or stop.
+- A fix is sent to the still-live child, which amends the slice commit, so
+  one commit per slice stays true.
+- The parent kills a child only after its gate is answered.
+
 ## Epic gate (always refuses, no `--force`)
 
 - `grove-implement` refuses outright on `kind: epic` (there is nothing to

@@ -1,6 +1,6 @@
 ---
 name: grove-run
-description: Build an approved auto-flow plan one slice at a time, each slice in its own child Grove session in a shared worktree, with a continue-or-stop gate after every slice (execution half of the grove auto flow). Load when the human wants to run, continue or resume an approved auto plan.
+description: Build an approved auto-flow plan one slice at a time, each slice in its own child Grove session in a shared worktree, unattended after a slice-1 review gate, with a final review (execution half of the grove auto flow). Load when the human wants to run, continue or resume an approved auto plan.
 license: MIT
 ---
 
@@ -11,8 +11,10 @@ license: MIT
 Execution half of the `auto` flow. The parent (this skill, run from the main
 checkout) starts one child Grove session per slice in a worktree on branch
 `run/<slug>-<profile>` (profile `inherit` when none is active), starts it and
-ends its turn until it reports, checks the result in git, and asks the human
-whether to continue. A profile (`--profile P` or the config's `profile`) sets
+ends its turn until it reports, and checks the result in git. The human is
+asked only after slice 1, after every slice with `--review-each`, and after
+the last slice (continue, fix with a comment, or stop); other slices run
+unattended. A profile (`--profile P` or the config's `profile`) sets
 the model per role (`references/roles.md`); the child is launched with the
 `planner` model. With `--slice N` the skill is the child: load
 `references/slice-mode.md` and follow only it.
@@ -25,7 +27,7 @@ the model per role (`references/roles.md`); the child is launched with the
 
 ## Inputs
 
-`<slug> [--profile P]` (parent mode) or `<slug> --slice N [--profile P]` (child
+`<slug> [--profile P] [--review-each]` (parent mode) or `<slug> --slice N [--profile P]` (child
 mode). `grove.config.json` (`artifactRoot`, `profile`, `profiles`).
 
 ## Preconditions & gates
@@ -79,8 +81,9 @@ Parent mode, all required (`--force` is not available here):
      later slices and `git -C <worktree>`.
 3. **End the turn.** Final line: "Started slice N in <label>; it will report
    here". No `grove wait` loop. The parent wakes when a message
-   `SLICE n: done|halted — <one line>` arrives from the child. `halted`: stop
-   as in step 4.
+   `SLICE n: done|halted — <one line>` arrives from the child (after a fix:
+   `SLICE n: done — fixed: <line>`). `halted`: stop as in step 4, except a
+   `halted` that answers a fix request (see step 5, fix with a comment).
    - Silence: a child that never reports (crash, or a permission prompt, shown
      as waiting in the sidebar) is seen by the human via the label. When the
      human says "continue" here, check `git -C <worktree> log -1 --format=%s`,
@@ -94,16 +97,54 @@ Parent mode, all required (`--force` is not available here):
    or if the report was `halted`, stop with "Slice N did not finish: see
    <worktree>/<artifactRoot>/<slug>/04-run.md"; leave the child running; the
    human decides. No retries.
-5. **Gate.** Show a short summary: what was built, the commit subject, and
-   where to see the diff (the worktree project in the app). Remind the human
-   that the run uses their own Claude permission settings. Ask through the
-   question tool: continue or stop, after every slice except the last (no question there:
-   `grove kill <label>` and go to step 6). On continue, `grove kill <label>`
-   the finished child (only now), then go to step 2 for the next slice and end the turn again (step 3). On
-   stop, `grove kill <label>`, print where things are (worktree, branch,
-   `04-run.md`) and end.
-6. **After the last slice.** Print the worktree path and branch, say that
-   `04-run.md` lives there, and that approving the run is not available yet.
+5. **Gate.** The human is asked after slice 1 (always), after every slice
+   when `--review-each` is given, and after the last slice (final review).
+   Every other slice has no question: after the git check, `grove kill <label>`
+   the finished child, start the next child (step 2) and end the turn (step 3).
+   Slices 2..N then run with no human prompt. At a gate:
+   - Show a summary in the format of the `auto` review gates section of
+     `references/gates.md`: what was built, review verdict and fix rounds
+     (from the slice's section in
+     `git -C <worktree> show HEAD:<artifactRoot>/<slug>/04-run.md`),
+     deviations, and where the diff is (the worktree project in the app, one
+     click from the sidebar; not a link).
+   - The slice-1 summary also lists the Bash command prefixes the parent needs
+     allowed so later slices do not stall: `grove new`, `grove send`,
+     `grove kill`, `grove ls`, `grove read`, `git -C <worktree>`. Say plainly
+     that the run uses the human's own Claude permission settings (a repo
+     without pre-approved edits and project commands halts at the first
+     prompt), and that they can allow those prefixes ("don't ask again")
+     before answering continue.
+   - Ask through the question tool, one question, options *continue*, *fix
+     with a comment*, *stop* (last slice: *finish*, *fix with a comment*,
+     *stop*). A one-slice plan has slice 1 as the last slice: its gate is the
+     final one (finish / fix / stop) and still carries the slice-1
+     permission-prefix note above.
+   - **continue / finish**: `grove kill <label>` the finished child (only
+     now). Continue: go to step 2 for the next slice and end the turn (step
+     3). Finish: go to step 6.
+   - **fix with a comment**: the comment is the question tool's other/free
+     text; if empty, ask once more for it through the question tool. Then
+     `grove send <label> "Fix slice N: <comment>"` to the live child (no
+     `--wait`) and end the turn. The child amends its slice commit and
+     reports `SLICE N: done — fixed: <line>`. On that report, check git again
+     (step 4: HEAD subject still `<slug>: slice N — <outcome>`, and
+     `git -C <worktree> rev-list --count <plan-commit>..HEAD` equals N, N being
+     the slice number: one commit per slice; a fix amends, never adds a
+     commit), then show the updated summary and ask the gate question again.
+     If the child instead reports `SLICE N: halted — <reason>` in answer to the
+     fix, the fix would have changed a Decision or the outcome, so nothing
+     changed and the slice commit is still valid: do not go to step 4's "did
+     not finish" stop. Show the one-line reason and ask the same gate question
+     again (continue / fix with a comment / stop; finish / fix / stop on the
+     last slice). A `halted` that is not an answer to a fix keeps the normal
+     handling. The silence rule of step 3 applies.
+   - **stop**: `grove kill <label>`, print where things are (worktree,
+     branch, `04-run.md` in the worktree) and end.
+6. **After the last slice.** Once its gate is answered *finish* and the child
+   is killed, print the worktree path and branch, say that `04-run.md` (with
+   its `## Final summary`) lives there, and that approving the run is not
+   available yet.
 
 ## Output
 
@@ -112,13 +153,13 @@ Commits on `run/<slug>-<profile>` in the worktree: one per slice, including
 
 ## Stop conditions
 
-Failed precondition, an unfinished slice, the human choosing stop,
-or the last slice done.
+Failed precondition, an unfinished slice, the human choosing stop at a gate,
+or the last slice's gate answered finish.
 
 ## Rules
 
 - Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
-- The parent asks only the commit-first question and the per-slice continue question.
+- The parent asks only the commit-first question and the gate questions (slice 1, `--review-each` slices, final); every other slice runs with no prompt.
 - The parent never edits files in the worktree.
 - Never start a later slice on a broken base.
 - Never kill a child before its gate is answered; never `send` into a child waiting on a prompt.
