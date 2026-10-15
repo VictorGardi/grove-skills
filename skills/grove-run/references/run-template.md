@@ -32,7 +32,7 @@ Roles:
 ## Slice <N>
 
 Session: <label>
-Status: <in progress | done>
+Status: <in progress | done | halted>
 Commit: this commit (see git log)
 
 ### Slice plan
@@ -45,6 +45,8 @@ Implementer 1:
 Models passed: <role: model, one entry per subagent role used, inherit where so>
 
 ### Review rounds
+
+Round <r>: <blocking findings, the fix, the result> (one line per round)
 
 <verdict>, <blocking count> blocking, <fix rounds> fix rounds. Non-blocking left: <list or none>
 
@@ -59,6 +61,26 @@ Models passed: <role: model, one entry per subagent role used, inherit where so>
 ### Left for the human
 
 <manual or interactive checks from the slice text not run, or none>
+
+### Halt
+
+<only after a halt: reason, what was tried, number of fix rounds>
+
+### Options
+
+<only after a halt: at least two, recommended first>
+
+#### Option <k>: <title>
+
+Pros: <...>
+Cons: <...>
+Changes design or outcome: <yes | no>
+
+### Decision
+
+<only after a halt: written by the resuming child, containing the line `Decision: <option title and text>`>
+
+Old halts are renamed `### Halt (attempt <n>)` and `### Options (attempt <n>)`.
 
 ### Fix after review
 

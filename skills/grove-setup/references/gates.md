@@ -40,7 +40,11 @@ Never bypass silently.
 - Plan content gates are the ones listed in `references/approve.md`
   (Procedure, step 1); they are re-run at approval and never skipped.
 - Staleness: `grove-run` stops when `03-plan.md`'s `version` is newer than
-  the one recorded in `04-run.md`'s `based_on`. The `plan` unit cannot be
+  the one recorded in `04-run.md`'s `based_on`, or when `04-run.md`'s
+  `Plan commit:` differs from the current plan commit. A stale run is never
+  resumed or continued: plain `grove-run` starts a new run on the next free
+  `-2`, `-3` branch; `--continue` stops and says to start a new run or abandon
+  the old one. The `plan` unit cannot be
   approved while `03-plan.md`'s `based_on` is behind the current versions of
   `01-outcome.md` or `02-research.md`.
 - An `auto` feature has no `03-design.md`, `04-structure.md`, `05-plan.md`
@@ -60,6 +64,21 @@ Never bypass silently.
 - A fix is sent to the still-live child, which amends the slice commit, so
   one commit per slice stays true.
 - The parent kills a child only after its gate is answered.
+
+### `auto` halts
+
+- A child that cannot finish halts: it writes `### Halt` and `### Options` in
+  `04-run.md` and commits only `04-run.md` as `<slug>: slice N halted`; the
+  failing code stays uncommitted in the worktree.
+- Every option carries `Changes design or outcome: yes|no`. An option with
+  `yes` is refused by `grove-run --continue`: "revise the plan first:
+  `grove-auto <slug>`", then re-approve the plan.
+- A chosen option is recorded by a fresh child as a `### Decision` section
+  containing the line `Decision: <option title and text>`; it folds the
+  halt commit in (soft reset), so the slice still ends as one `slice N —`
+  commit.
+- A permission prompt in a child is not a halt: the child stays waiting, no
+  report arrives, and no later slice starts.
 
 ## Epic gate (always refuses, no `--force`)
 

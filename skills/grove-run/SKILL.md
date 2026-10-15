@@ -1,6 +1,6 @@
 ---
 name: grove-run
-description: Build an approved auto-flow plan one slice at a time, each slice in its own child Grove session in a shared worktree, unattended after a slice-1 review gate, with a final review (execution half of the grove auto flow). Load when the human wants to run, continue or resume an approved auto plan.
+description: Build an approved auto-flow plan one slice at a time, each slice in its own child Grove session in a shared worktree, unattended after a slice-1 review gate, with a final review (execution half of the grove auto flow). Load when the human wants to run, continue, resume or `--continue` a halted or stopped approved auto plan.
 license: MIT
 ---
 
@@ -16,7 +16,8 @@ asked only after slice 1, after every slice with `--review-each`, and after
 the last slice (continue, fix with a comment, or stop); other slices run
 unattended. A profile (`--profile P` or the config's `profile`) sets
 the model per role (`references/roles.md`); the child is launched with the
-`planner` model. With `--slice N` the skill is the child: load
+`planner` model. `--continue` (parent mode only) resumes a stopped run per
+`references/continue.md`. With `--slice N` the skill is the child: load
 `references/slice-mode.md` and follow only it.
 
 ## When to use / not use
@@ -27,7 +28,7 @@ the model per role (`references/roles.md`); the child is launched with the
 
 ## Inputs
 
-`<slug> [--profile P] [--review-each]` (parent mode) or `<slug> --slice N [--profile P]` (child
+`<slug> [--continue] [--profile P] [--review-each]` (parent mode) or `<slug> --slice N [--profile P]` (child
 mode). `grove.config.json` (`artifactRoot`, `profile`, `profiles`).
 
 ## Preconditions & gates
@@ -44,21 +45,30 @@ Parent mode, all required (`--force` is not available here):
 - `git status --porcelain -- <artifactRoot>/<slug>/ grove.config.json` is empty.
   If not, ask through the question tool whether to commit the folder and config
   together as `<slug>: approved plan`;
-  commit on yes, stop on no.
+  commit on yes, stop on no. With `--continue` skip this question when the
+  worktree for the run exists. Every other gate applies to `--continue` too.
 - You are inside a Grove session: `grove ls --json` lists `$GROVE_SESSION_ID`.
   Otherwise stop: grove-run needs the Grove app.
 
 ## Process
 
-1. **Resolve.** Resolve the roles per `references/roles.md` (`--profile P`, else
+1. **Resolve.** With `--continue`, follow `references/continue.md` instead of
+   the rest of this step (never create a new branch with `--continue`). Resolve the roles per `references/roles.md` (`--profile P`, else
    the config's `profile`, else `inherit`); an unknown profile or an
    unsupported agent stops the skill. Plan commit =
    `git log -1 --format=%H -- <artifactRoot>/<slug>/03-plan.md`. Branch =
    `run/<slug>-<profile>`; on resume `--profile` selects which run's branch
-   (without it, the config's active profile, else `inherit`). **Resume** = a worktree
-   for that branch already exists (`git worktree list --porcelain`) and has a
-   slice not done. Use the `-2`, `-3` suffix only when all slices on the
-   existing branch are done, or the branch exists with no worktree. Slices = the
+   (without it, the config's active profile, else `inherit`). **Stale** = the
+   `Plan commit:` in the header of the worktree's committed `04-run.md` differs
+   from the current plan commit, or `03-plan.md`'s `version` is newer than
+   `04-run.md`'s `based_on`. A stale run is never resumed: start a new run on
+   the next free `-2`, `-3` branch from the new plan commit. **Resume** = a
+   worktree for that branch already exists (`git worktree list --porcelain`),
+   is not stale and has a slice not done. If HEAD there is a halt commit
+   (`<slug>: slice N halted`), do not start a child: stop with "Halted at slice
+   N: options in <worktree>/<artifactRoot>/<slug>/04-run.md; run `grove-run
+   <slug> --continue`". Use the `-2`, `-3` suffix only when the existing branch
+   is stale, all its slices are done, or it has no worktree. Slices = the
    `### Slice N.` headings in `03-plan.md`. A slice is done when
    `git -C <worktree> show HEAD:<artifactRoot>/<slug>/04-run.md` has
    `## Slice N` with `Status: done` and a non-empty `Commit:` line, confirmed
@@ -86,6 +96,9 @@ Parent mode, all required (`--force` is not available here):
    `halted` that answers a fix request (see step 5, fix with a comment).
    - Silence: a child that never reports (crash, or a permission prompt, shown
      as waiting in the sidebar) is seen by the human via the label. When the
+     human says "continue" here and the child is waiting, say which child (name the label)
+     to answer the prompt in, then say "continue" here or run
+     `grove-run <slug> --continue`. When the
      human says "continue" here, check `git -C <worktree> log -1 --format=%s`,
      `04-run.md` and `grove ls` first: slice finished but report lost, go to
      step 4; child still waiting, tell the human to answer in that child and
@@ -93,10 +106,19 @@ Parent mode, all required (`--force` is not available here):
      child gone with no matching commit: stop as in the git check. Never `send` into a child waiting on a prompt; never start a
      later slice without a report or a git-confirmed finish.
 4. **Check in git.** `git -C <worktree> log -1 --format=%s` must equal
-   `<slug>: slice N — <outcome>` (the message alone is never trusted). If not,
-   or if the report was `halted`, stop with "Slice N did not finish: see
-   <worktree>/<artifactRoot>/<slug>/04-run.md"; leave the child running; the
-   human decides. No retries.
+   `<slug>: slice N — <outcome>` and `git -C <worktree> rev-list --count
+   <plan-commit>..HEAD` must equal N (one commit per slice), for every `done`
+   report (first run, retry, `Decision:` child, fix); the message alone is never
+   trusted. Otherwise:
+   - HEAD subject `<slug>: slice N halted` (the halt commit; the report was
+     `halted`, or HEAD says so after "continue"): stop with "Halted at slice N:
+     options in <worktree>/<artifactRoot>/<slug>/04-run.md"; leave the child
+     (<label>) running, no later slice starts. The human then runs
+     `grove-run <slug> --continue`.
+   - Any other mismatch, or a `halted` report without the halt subject: stop
+     with "Slice N did not finish in <label>: see
+     <worktree>/<artifactRoot>/<slug>/04-run.md"; leave the child running; the
+     human decides (`grove-run <slug> --continue`). No retries.
 5. **Gate.** The human is asked after slice 1 (always), after every slice
    when `--review-each` is given, and after the last slice (final review).
    Every other slice has no question: after the git check, `grove kill <label>`
@@ -159,7 +181,7 @@ or the last slice's gate answered finish.
 ## Rules
 
 - Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
-- The parent asks only the commit-first question and the gate questions (slice 1, `--review-each` slices, final); every other slice runs with no prompt.
+- The parent asks only the commit-first question, the gate questions (slice 1, `--review-each` slices, final), the `--continue` run-choice question, the `--continue` option question and the `--continue` retry / leave-it question; every other slice runs with no prompt.
 - The parent never edits files in the worktree.
 - Never start a later slice on a broken base.
 - Never kill a child before its gate is answered; never `send` into a child waiting on a prompt.
