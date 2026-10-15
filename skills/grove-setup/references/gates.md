@@ -28,6 +28,26 @@ in the new artifact's `forced` frontmatter array (for `grove-implement`:
 `05-plan.md`'s), e.g. `forced: ["skipped design review, trivial rename"]`.
 Never bypass silently.
 
+`auto` flow has its own gates: see "`auto` flow gates" below.
+
+## `auto` flow gates
+
+- `grove-run` hard gate: the `plan` unit is approved, meaning
+  `01-outcome.md`, `02-research.md` and `03-plan.md` all have
+  `status: approved`. There is no `--force` in this version: a closed gate
+  stays closed until the human approves the plan with `grove-approve <slug>
+  plan`.
+- Plan content gates are the ones listed in `references/approve.md`
+  (Procedure, step 1); they are re-run at approval and never skipped.
+- Staleness: `grove-run` stops when `03-plan.md`'s `version` is newer than
+  the one recorded in `04-run.md`'s `based_on`. The `plan` unit cannot be
+  approved while `03-plan.md`'s `based_on` is behind the current versions of
+  `01-outcome.md` or `02-research.md`.
+- An `auto` feature has no `03-design.md`, `04-structure.md`, `05-plan.md`
+  or `06-implementation.md`. Its artifacts are `01-outcome.md`,
+  `02-research.md`, `03-plan.md` and `04-run.md`.
+- `04-run.md` lives in the run worktree, not in the main checkout.
+
 ## Epic gate (always refuses, no `--force`)
 
 - `grove-implement` refuses outright on `kind: epic` (there is nothing to

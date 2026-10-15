@@ -79,10 +79,18 @@ Rules:
    - implementation: every slice in `04-structure.md` (`small` flow: every
      slice in `05-plan.md`) has a `## Slice N` section in `05-plan.md`, and
      `05-plan.md` has no `- [ ]` left
-   - plan: each of the three files has complete frontmatter and an empty
-     `## Open questions`; no literal TODO/TBD; every decision in
-     `03-plan.md` has a `Pick:`; every slice in `03-plan.md` has a
-     `Verification`
+   - plan (all three files): complete frontmatter; `## Open questions` empty;
+     no literal TODO/TBD
+   - plan, `01-outcome.md`: has the four brief sections (`## Summary`,
+     `## What the human sees and does`, `## Non-goals`,
+     `## How I'll know it works`)
+   - plan, `03-plan.md`: decisions count ≤ `limits.maxOneWayDecisions` (a
+     plan stating "No one-way decisions." has zero); every decision has at
+     least two options and a `Pick:`; a decision carrying `Agents disagree:`
+     also has a `Human pick:` and its `Pick:` equals it; slices count ≤
+     `limits.maxSlices`; every slice has a `Verification`; slice 1 has the
+     `Thin end-to-end:` line; `based_on` lists the current versions of
+     `01-outcome.md` and `02-research.md`
    If any check fails, list exactly what fails and stop — do not ask for
    approval. `--force <reason>` may override a failing check; record the
    reason in that file's `forced` array, and still ask for the yes.

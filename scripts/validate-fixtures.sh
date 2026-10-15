@@ -191,9 +191,15 @@ for feature_dir in "$fixtures_dir"/*/docs/work/*/; do
   kind="$(field "kind" "$(frontmatter "$fm_file")")"
 
   case "$raw_flow" in
-    ""|full|standard|small) ;;
-    *) err "$name: flow '$raw_flow' not in {full, standard, small}" ;;
+    ""|full|standard|small|auto) ;;
+    *) err "$name: flow '$raw_flow' not in {full, standard, small, auto}" ;;
   esac
+  [[ "$flow" == "auto" && "$kind" != "feature" ]] && err "$name: an auto flow must be kind feature, got '$kind'"
+  if [[ "$flow" == "auto" ]]; then
+    for af in 03-design.md 04-structure.md 05-plan.md 06-implementation.md; do
+      [[ -f "$d/$af" ]] && err "$name: auto flow must not have $af"
+    done
+  fi
   [[ "$kind" == "epic" && "$flow" != "full" ]] && err "$name: an epic must be flow full, got '$flow'"
   if [[ -n "$raw_flow" ]] && ! grep -q '^## Flow log' "$fm_file"; then
     err "$name: flow is set but feature.md has no ## Flow log"
@@ -269,6 +275,101 @@ if [[ -d "$fl" ]]; then
   grep -q '^## Slice 3' "$ff/05-plan.md" \
     && err "full-feature: slice 3 should not be planned ahead" \
     || ok "full-feature: slice 3 not planned ahead (just in time)"
+fi
+
+# --- auto flow: plan content gates -----------------------------------------
+
+# Print one line per failed plan content gate for an auto feature folder
+# (see shared/approve.md, plan unit). Limits mirror grove.config.json
+# (maxOneWayDecisions 8, maxSlices 8), hardcoded here.
+plan_gate_failures() {
+  local d="$1" max_dec=8 max_sl=8 f key req v1 v2 plan="$1/03-plan.md" based
+  for f in 01-outcome.md 02-research.md 03-plan.md; do
+    if [[ ! -f "$d/$f" ]]; then echo "$f: missing"; continue; fi
+    req="feature phase status version created updated approved_at based_on forced"
+    [[ "$f" == "02-research.md" ]] && req="$req repo_heads"
+    for key in $req; do
+      frontmatter "$d/$f" | grep -q "^$key:" || echo "$f: frontmatter key '$key' missing"
+    done
+    if [[ -n "$(awk '/^## Open questions/{f=1; next} f && /^## /{exit} f && NF' "$d/$f")" ]]; then
+      echo "$f: non-empty Open questions"
+    fi
+    if grep -Eq 'TODO|TBD' "$d/$f"; then echo "$f: contains TODO/TBD"; fi
+  done
+  [[ -f "$d/01-outcome.md" && -f "$plan" ]] || return 0
+  for key in "## Summary" "## What the human sees and does" "## Non-goals" "## How I'll know it works"; do
+    grep -qF "$key" "$d/01-outcome.md" || echo "01-outcome.md: missing section '$key'"
+  done
+  awk -v maxd="$max_dec" -v maxs="$max_sl" '
+    function flush_dec() {
+      if (!indec) return
+      if (opts < 2) print "03-plan.md: " dname " has fewer than 2 options"
+      if (!pick) print "03-plan.md: " dname " has no Pick"
+      if (dis && hp == "") print "03-plan.md: " dname " has Agents disagree but no Human pick"
+      if (dis && hp != "" && pick && hp != pk) print "03-plan.md: " dname " Pick differs from Human pick"
+      indec = 0
+    }
+    function flush_sl() {
+      if (!insl) return
+      if (!ver) print "03-plan.md: " sname " has no Verification"
+      if (sname ~ /Slice 1\./ && !thin) print "03-plan.md: slice 1 has no Thin end-to-end line"
+      insl = 0
+    }
+    /^### D[0-9]+\./ { flush_dec(); flush_sl(); indec=1; ndec++; dname=$2; opts=0; pick=0; dis=0; hp=""; pk=""; next }
+    /^### Slice [0-9]+\./ { flush_dec(); flush_sl(); insl=1; nsl++; sname="Slice " $3; ver=0; thin=0; next }
+    /^## / { flush_dec(); flush_sl() }
+    indec && /^- / { opts++ }
+    indec && /^\*\*Pick:\*\*/ { pick=1; pk=$0; sub(/^\*\*Pick:\*\* */, "", pk) }
+    indec && /^\*\*Agents disagree:\*\*/ { dis=1 }
+    indec && /^\*\*Human pick:\*\*/ { hp=$0; sub(/^\*\*Human pick:\*\* */, "", hp) }
+    insl && /^\*\*Verification\./ { ver=1 }
+    insl && /^\*\*Thin end-to-end:\*\*/ { thin=1 }
+    END {
+      flush_dec(); flush_sl()
+      if (ndec > maxd) print "03-plan.md: " ndec " decisions exceeds " maxd
+      if (nsl > maxs) print "03-plan.md: " nsl " slices exceeds " maxs
+      if (nsl < 1) print "03-plan.md: no slices"
+    }
+  ' "$plan"
+  v1="$(field "version" "$(frontmatter "$d/01-outcome.md")")"
+  v2="$(field "version" "$(frontmatter "$d/02-research.md")")"
+  based="$(list_field "based_on" "$plan")"
+  echo "$based" | grep -qx "01-outcome.md@$v1" || echo "03-plan.md: based_on lacks 01-outcome.md@$v1"
+  echo "$based" | grep -qx "02-research.md@$v2" || echo "03-plan.md: based_on lacks 02-research.md@$v2"
+}
+
+af="$fixtures_dir/flows/docs/work/2026-10-04-auto-feature"
+if [[ -d "$af" ]]; then
+  expect_eq "auto-feature flow" "$(flow_of "$af")" "auto"
+  out="$(plan_gate_failures "$af")"
+  [[ -z "$out" ]] && ok "auto-feature passes the plan content gates" \
+    || err "auto-feature fails plan gates: $out"
+  for f in 01-outcome.md 02-research.md 03-plan.md; do
+    expect_eq "auto-feature $f status" "$(st "$af/$f")" "approved"
+  done
+  expect_eq "auto-feature approved_at (research = outcome)" "$(approved_at_of "$af/02-research.md")" "$(approved_at_of "$af/01-outcome.md")"
+  expect_eq "auto-feature approved_at (plan = outcome)" "$(approved_at_of "$af/03-plan.md")" "$(approved_at_of "$af/01-outcome.md")"
+
+  tmp="$(mktemp -d "${TMPDIR:-/tmp}/grove-fixtures.XXXXXX")" || { err "mktemp failed; cannot run plan-gate mutation tests"; tmp=""; }
+  [[ -n "$tmp" ]] && trap 'rm -rf "$tmp"' EXIT
+  mutate_check() { # <label> <sed-or-shell mutation as function name>
+    [[ -n "$tmp" ]] || return 0
+    rm -rf "$tmp/m"; cp -R "$af" "$tmp/m"
+    "$2" "$tmp/m/03-plan.md"
+    if [[ -n "$(plan_gate_failures "$tmp/m")" ]]; then ok "plan gates refuse: $1"
+    else err "plan gates did not refuse: $1"; fi
+  }
+  mut_pick() { # drop D1's Pick (first Pick line)
+    awk '!d && /^\*\*Pick:\*\*/ {d=1; next} {print}' "$1" > "$1.new" && mv "$1.new" "$1"; }
+  mut_thin() { grep -v '^\*\*Thin end-to-end:\*\*' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_oq() { printf '\nWhich theme is the default?\n' >> "$1"; }
+  mut_hp() { grep -v '^\*\*Human pick:\*\*' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mut_based() { sed 's/01-outcome.md@1/01-outcome.md@0/' "$1" > "$1.new"; mv "$1.new" "$1"; }
+  mutate_check "D1 without Pick" mut_pick
+  mutate_check "slice 1 without Thin end-to-end" mut_thin
+  mutate_check "text under Open questions" mut_oq
+  mutate_check "agents-disagree decision without Human pick" mut_hp
+  mutate_check "stale based_on" mut_based
 fi
 
 if (( fail == 0 )); then
