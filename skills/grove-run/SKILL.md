@@ -124,8 +124,8 @@ Parent mode, all required (`--force` is not available here):
      human decides (`grove-run <slug> --continue`). No retries.
 5. **Gate.** The human is asked after slice 1 (always), after every slice
    when `--review-each` is given, and after the last slice (final review).
-   Every other slice has no question: after the git check, `grove kill <label>`
-   the finished child, start the next child (step 2) and end the turn (step 3).
+   Every other slice has no question: after the git check, `grove status <label> done`
+   on the finished child (it stays open), start the next child (step 2) and end the turn (step 3).
    Slices 2..N then run with no human prompt. At a gate:
    - Show a summary in the format of the `auto` review gates section of
      `references/gates.md`: what was built, review verdict and fix rounds
@@ -135,7 +135,7 @@ Parent mode, all required (`--force` is not available here):
      click from the sidebar; not a link).
    - The slice-1 summary also lists the Bash command prefixes the parent needs
      allowed so later slices do not stall: `grove new`, `grove send`,
-     `grove kill`, `grove ls`, `grove read`, `git -C <worktree>`. Say plainly
+     `grove status`, `grove kill`, `grove ls`, `grove read`, `git -C <worktree>`. Say plainly
      that the run uses the human's own permission settings for the agent that
      runs it (Claude: a repo without pre-approved edits and project commands
      halts at the first prompt; OpenCode: its `permission` config, below), and
@@ -153,8 +153,8 @@ Parent mode, all required (`--force` is not available here):
      *stop*). A one-slice plan has slice 1 as the last slice: its gate is the
      final one (finish / fix / stop) and still carries the slice-1
      permission-prefix note above.
-   - **continue / finish**: `grove kill <label>` the finished child (only
-     now). Continue: go to step 2 for the next slice and end the turn (step
+   - **continue / finish**: `grove status <label> done` on the finished child
+     (only now; never kill it). Continue: go to step 2 for the next slice and end the turn (step
      3). Finish: go to step 6.
    - **fix with a comment**: the comment is the question tool's other/free
      text; if empty, ask once more for it through the question tool. Then
@@ -172,10 +172,10 @@ Parent mode, all required (`--force` is not available here):
      again (continue / fix with a comment / stop; finish / fix / stop on the
      last slice). A `halted` that is not an answer to a fix keeps the normal
      handling. The silence rule of step 3 applies.
-   - **stop**: `grove kill <label>`, print where things are (worktree,
+   - **stop**: `grove status <label> done`, print where things are (worktree,
      branch, `04-run.md` in the worktree) and end.
 6. **After the last slice.** Once its gate is answered *finish* and the child
-   is killed, print the hand-off as the final message:
+   is marked done, print the hand-off as the final message:
    the worktree path and branch; that `04-run.md` lives there with its
    `## Final summary`; a ready-to-paste line with real values filled in,
    `grove new <the parent's own agent> --cwd <worktree> --prompt "/grove-approve <slug> run"`;
@@ -208,6 +208,6 @@ the last slice's gate answered finish, or the human abandoning the run.
 - The parent asks only the commit-first question, the gate questions (slice 1, `--review-each` slices, final), the `--continue` run-choice question, the `--continue` option question and the `--continue` retry / leave-it question; every other slice runs with no prompt.
 - The parent never edits files in the worktree.
 - Never start a later slice on a broken base.
-- Never kill a child before its gate is answered; never `send` into a child waiting on a prompt.
+- Never mark a child done or kill it before its gate is answered; a finished child is marked done with `grove status <label> done`, never killed (`grove kill` is only for replacing a live idle child on `--continue` retry); never `send` into a child waiting on a prompt.
 - Name roles only; never model names.
 - Only `grove-approve`, invoked by the human, approves. This skill approves nothing.

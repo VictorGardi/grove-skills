@@ -42,7 +42,7 @@ expected (the failing code is uncommitted), never clean it.
    - d. Neither, child gone: start a fresh child for slice N with no `Decision:` line and
      the line `Retry: yes` (the worktree as it stands; label per `SKILL.md` step 2), same
      prompt as `SKILL.md` step 2.
-4. **Halted.** `grove kill` the leftover child first. Read the options:
+4. **Halted.** `grove status <label> done` the leftover child first (do not kill it). Read the options:
    `git -C <worktree> show HEAD:<artifactRoot>/<slug>/04-run.md`; only the latest
    un-numbered `### Options` counts (older ones are `### Options (attempt <n>)`). If the
    human already named an option earlier in this session, use it without asking again.
