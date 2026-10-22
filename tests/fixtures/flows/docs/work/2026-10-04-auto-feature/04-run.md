@@ -14,7 +14,7 @@ forced: []
 # Run: Add a dark-mode toggle to settings
 
 Profile: inherit
-Branch: run/2026-10-04-auto-feature-inherit
+Branch: feature/2026-10-04-auto-feature-inherit
 Plan commit: 7c1e9a47d3b25f08a6e1c94b0d2f7385ae61c9d0
 Roles:
 - cto: claude, inherit

@@ -4,10 +4,10 @@ Resumes a stopped run (halt, did-not-finish, lost report, permission stop). Same
 `SKILL.md`. The parent never edits worktree files; a dirty worktree after a halt is
 expected (the failing code is uncommitted), never clean it.
 
-1. **Pick the run.** Candidates = branches `run/<slug>-*` (`git branch --list`) with a
+1. **Pick the run.** Candidates = branches `feature/<slug>-*` (`git branch --list`) with a
    worktree (`git worktree list --porcelain`), not stale (stale test as in `SKILL.md`
    step 1), and either a slice not done (done test as in `SKILL.md` step 1) or all slices
-   done with the last slice's child still live. `--profile P` selects `run/<slug>-P`; else
+   done with the last slice's child still live. `--profile P` selects `feature/<slug>-P`; else
    exactly one candidate is used; several: ask which through the question tool (one
    question, one option per branch); none: stop with "nothing to continue; run grove-run
    <slug>". If the selected (or only) run is stale, stop with "this run is for an older
@@ -21,13 +21,13 @@ expected (the failing code is uncommitted), never clean it.
 2. **Lost report.** Before picking N: HEAD subject = `git -C <worktree> log -1
    --format=%s`. If it is `<slug>: slice M — <outcome>` for a slice M whose gate is still
    due (slice 1, any slice with `--review-each`, or the last slice), the gate may not have
-   been answered, and M's child (labels starting `<branch>-slice-<M>-a` in `grove ls --all
+   been answered, and M's child (labels starting `<name>-slice-<M>-a` in `grove ls --all
    --json`, the highest `a<k>`) is still live: treat as a report for M and run `SKILL.md`
    step 4/5 for M with that label. This may re-ask a gate already answered: acceptable.
    All slices done: M = the last slice, found the same way; no live child for M: nothing
    to continue, print where things are and end.
    Otherwise **slice N** = the first slice not done.
-3. **Find N's child.** `grove ls --all --json`, labels starting `<branch>-slice-<N>-a`,
+3. **Find N's child.** `grove ls --all --json`, labels starting `<name>-slice-<N>-a`,
    the highest `a<k>`. HEAD subject as in step 2.
    - a. Finished slice, report lost: handled in step 2.
    - b. `<slug>: slice N halted`: go to step 4.

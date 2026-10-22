@@ -69,7 +69,7 @@ above and needs the Grove app (`grove` on `PATH`, `GROVE_SESSION_ID` set).
   a plan of decisions and slices, written as `01-outcome.md`,
   `02-research.md` and `03-plan.md`.
 - `grove-run <slug>`: starts one child session per slice in one worktree on
-  branch `run/<slug>-<profile>`, one commit per slice; progress is recorded
+  branch `feature/<slug>-<profile>`, one commit per slice; progress is recorded
   in `04-run.md` on that branch.
 
 Your stops: the outcome play-back, the plan veto then

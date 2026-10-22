@@ -10,7 +10,7 @@ license: MIT
 
 Execution half of the `auto` flow. The parent (this skill, run from the main
 checkout) starts one child Grove session per slice in a worktree on branch
-`run/<slug>-<profile>` (profile `inherit` when none is active), starts it and
+`feature/<slug>-<profile>` (profile `inherit` when none is active), starts it and
 ends its turn until it reports, and checks the result in git. The human is
 asked only after slice 1, after every slice with `--review-each`, and after
 the last slice (continue, fix with a comment, or stop); other slices run
@@ -57,7 +57,7 @@ Parent mode, all required (`--force` is not available here):
    the config's `profile`, else `inherit`); an unknown profile or an
    unsupported agent stops the skill. Plan commit =
    `git log -1 --format=%H -- <artifactRoot>/<slug>/03-plan.md`. Branch =
-   `run/<slug>-<profile>`; on resume `--profile` selects which run's branch
+   `feature/<slug>-<profile>`; on resume `--profile` selects which run's branch
    (without it, the config's active profile, else `inherit`). **Stale** = the
    `Plan commit:` in the header of the worktree's committed `04-run.md` differs
    from the current plan commit, or `03-plan.md`'s `version` is newer than
@@ -74,9 +74,9 @@ Parent mode, all required (`--force` is not available here):
    `## Slice N` with `Status: done` and a non-empty `Commit:` line, confirmed
    by a git log subject `<slug>: slice N — <outcome>` on the branch. Next = the
    first slice not done.
-2. **Start the slice.** Label = `<branch>-slice-<n>-a<k>`, where k = 1 plus the
+2. **Start the slice.** Label = `<name>-slice-<n>-a<k>`, where `<name>` is `<slug>` without its leading `yyyy-mm-dd-` date, and k = 1 plus the
    number of sessions in `grove ls --all --json` whose label starts with
-   `<branch>-slice-<n>-a`. Child prompt: "Load the grove-run skill and follow
+   `<name>-slice-<n>-a`. Child prompt: "Load the grove-run skill and follow
    it exactly. Arguments: <slug> --slice <N> --profile <P>" plus the lines `Label: <label>`,
    `Parent: <id>`,
    `Roles: cto=<m|inherit> researcher=<m|inherit> planner=<m|inherit> reviewer=<m|inherit> implementer=<m|inherit>`
@@ -193,7 +193,7 @@ re-plan, the human runs `grove-auto <slug>`, re-approves with
 
 ## Output
 
-Commits on `run/<slug>-<profile>` in the worktree: one per slice, including
+Commits on `feature/<slug>-<profile>` in the worktree: one per slice, including
 `04-run.md`; at the end, the hand-off message naming `grove-approve <slug> run`.
 The parent writes no files.
 

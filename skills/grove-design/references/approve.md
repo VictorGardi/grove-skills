@@ -47,7 +47,7 @@ if any file fails, nothing in the unit is approved.**
 | `design+structure` | `03-design.md`, `04-structure.md` | `standard` flow — atomic |
 | `implementation` | `06-implementation.md` | after the last slice, all flows; never on an epic — approving it marks the feature done |
 | `plan` | `01-outcome.md`, `02-research.md`, `03-plan.md` | `auto` flow only — atomic, all-or-none; approving it unlocks `grove-run` |
-| `run` | `04-run.md` | `auto` flow only; run from the run worktree (cwd), where the file lives on the run branch `run/<slug>-<profile>`; after the final review; the artifact is read from the worktree, not the main checkout |
+| `run` | `04-run.md` | `auto` flow only; run from the run worktree (cwd), where the file lives on the run branch `feature/<slug>-<profile>`; after the final review; the artifact is read from the worktree, not the main checkout |
 
 Rules:
 
