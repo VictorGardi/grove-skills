@@ -25,7 +25,6 @@ recommendations.
 
 - Only the `## Research questions` section of `01-questions.md`.
 - `CONTEXT.md` and the ADRs in `adrDir`.
-- Child mode (`feature.md` has `parent` set): also the epic's `02-research.md`.
 
 ## Preconditions & gates
 

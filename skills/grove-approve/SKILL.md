@@ -38,7 +38,7 @@ resolves what to approve and runs that procedure.
   worktree, so cwd = the worktree where `04-run.md` lives).
   If the unit is omitted, propose the one that's pending (e.g. in `standard`
   flow with both drafts present: `design+structure`) and confirm it.
-- `feature.md` (`flow`, `kind`, `children`, `parent`, `order`), the
+- `feature.md` (`flow`), the
   artifact file(s), and for design its draft ADRs.
 
 ## Preconditions & gates
@@ -53,7 +53,7 @@ gate-satisfying state. The unit rules in `references/approve.md` apply: in
 2. Follow `references/approve.md` from "Procedure" step 1 to the end:
    validate, summarise, ask *"Approve now? (yes / not yet)"*, and on an
    explicit yes apply every effect (frontmatter, stale marking, ADR flips,
-   epic child folders, tracker comment). For `plan` and `run` the
+   tracker comment). For `plan` and `run` the
    prompt is a question-tool question, per `references/approve.md`. For `run`,
    read `04-run.md` from the current worktree (cwd), not the main checkout,
    but resolve the CURRENT plan commit and version in the main checkout (first
@@ -63,7 +63,7 @@ gate-satisfying state. The unit rules in `references/approve.md` apply: in
 ## Output
 
 As `references/approve.md` describes: updated frontmatter, stale marks,
-flipped ADRs, and for an epic structure the child folders and `children:`.
+flipped ADRs.
 
 ## Stop conditions
 

@@ -1,6 +1,6 @@
 ---
 name: grove-start
-description: Start a grove feature in one session — questions phase, flow choice, then blind research via subagents, ending with a skim summary and an inline approval prompt (phases 1–2 of the grove workflow). Load when the human wants to start a feature, start grove on a ticket or idea, or start a backlog epic child.
+description: Start a grove feature in one session — questions phase, flow choice, then blind research via subagents, ending with a skim summary and an inline approval prompt (phases 1–2 of the grove workflow). Load when the human wants to start a feature, start grove on a ticket or idea.
 license: MIT
 ---
 
@@ -16,8 +16,8 @@ twice across two sessions. It writes exactly what `grove-questions` and
 
 ## When to use / not use
 
-- Use to start a new feature (ticket id/URL or pasted idea), an epic, or a
-  backlog child of an epic (its folder and `feature.md` already exist).
+- Use to start a new feature (ticket id/URL or pasted idea), or a backlog
+  feature whose folder and `feature.md` already exist.
 - Do not use to revise an existing `01-questions.md` or `02-research.md` —
   use `grove-questions` or `grove-research` directly, in revise mode.
 - If `01-questions.md` already exists for the slug, stop and point the human
@@ -26,7 +26,7 @@ twice across two sessions. It writes exactly what `grove-questions` and
 ## Inputs
 
 One of:
-- a feature slug (an existing backlog folder, e.g. an epic child),
+- a feature slug (an existing backlog folder),
 - a path to an existing `feature.md`,
 - a ticket id/URL (read via the Linear MCP server if `grove.config.json` has
   `tracker.type: "linear"`) or pasted text describing the idea.
@@ -36,15 +36,14 @@ first and stop).
 
 ## Preconditions & gates
 
-None of its own — it is the entry point. The rolling-wave warning applies
-to an epic child, per `references/gates.md`.
+None of its own — it is the entry point.
 
 ## Process
 
 1. **Questions phase.** Load the `grove-questions` skill and follow its
-   Process in full — mode detection (feature / epic / child), ticket
+   Process in full — ticket
    snapshot, shallow orientation, `01-questions.md`, the size verdict, the
-   flow proposal, and walking the product (or epic shaping) questions **one
+   flow proposal, and walking the product questions **one
    at a time**. Skip only its end-of-session message and its approval step:
    this skill does both at the end.
 2. **Confirm the flow** if `grove-questions` hasn't already recorded the
@@ -54,8 +53,7 @@ to an epic child, per `references/gates.md`.
 4. **Research, blind.** Follow `references/research-process.md`. This
    session has read the ticket, so:
    - hand fact-gathering subagents **only** their cluster's research
-     question text (plus `CONTEXT.md`, and in child mode the epic's research
-     for their area) — never the ticket, the goal, the product answers, or
+     question text (plus `CONTEXT.md`) — never the ticket, the goal, the product answers, or
      `feature.md`;
    - hand the synthesis to a separate blind **synthesis subagent** with only
      the question text, the cluster answers, and the heading list;
@@ -93,7 +91,7 @@ to an epic child, per `references/gates.md`.
 
 ## Stop conditions
 
-- Size L, and the human hasn't agreed to epic mode, a split, or continuing
+- Size L, and the human hasn't agreed to a split or continuing
   as one `full`-flow feature: stop after questions (as `grove-questions`
   does) — no research until the scope is settled.
 - No subagent tool available: do not write research in this session (it

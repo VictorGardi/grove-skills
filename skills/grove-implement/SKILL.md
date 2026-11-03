@@ -25,17 +25,12 @@ previous slice's real code and deviations in view.
 
 ## Inputs
 
-`feature.md` (`flow`, `kind`), `03-design.md` and `04-structure.md`
+`feature.md` (`flow`), `03-design.md` and `04-structure.md`
 (`small` flow: `01-questions.md` instead), `05-plan.md` and
 `06-implementation.md` if they exist, `grove.config.json` (`commands.*`,
 `tracker`), and the code. Planning rules: `references/slice-plan.md`.
 
 ## Preconditions & gates
-
-**Epic gate (always refuses, no `--force`):** if `feature.md` has
-`kind: epic`, refuse. Tell the human which child is next (the lowest-`order`
-child not yet at `implementation`, per `references/gates.md`) and its next
-command (`grove-start <child-slug>` for a backlog child).
 
 **Hard gate, by flow** (missing `flow` = `full`), per `references/gates.md`:
 

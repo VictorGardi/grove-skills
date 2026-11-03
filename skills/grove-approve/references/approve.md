@@ -42,10 +42,10 @@ if any file fails, nothing in the unit is approved.**
 | `questions` | `01-questions.md` | `grove-questions`; `grove-start` in `small` flow |
 | `research` | `02-research.md` | `grove-research` |
 | `questions+research` | `01-questions.md`, `02-research.md` | end of `grove-start` (`full`/`standard`) |
-| `design` | `03-design.md` | `full` flow and epics only |
+| `design` | `03-design.md` | `full` flow only |
 | `structure` | `04-structure.md` | `full` flow; `standard` flow only when `03-design.md` is already `approved` (a structure revised after the combined approval) |
 | `design+structure` | `03-design.md`, `04-structure.md` | `standard` flow — atomic |
-| `implementation` | `06-implementation.md` | after the last slice, all flows; never on an epic — approving it marks the feature done |
+| `implementation` | `06-implementation.md` | after the last slice, all flows; approving it marks the feature done |
 | `plan` | `01-outcome.md`, `02-research.md`, `03-plan.md` | `auto` flow only — atomic, all-or-none; approving it unlocks `grove-run` |
 | `run` | `04-run.md` | `auto` flow only; run from the run worktree (cwd), where the file lives on the run branch `feature/<slug>-<profile>`; after the final review; the artifact is read from the worktree, not the main checkout |
 
@@ -75,8 +75,7 @@ Rules:
    - `## Open questions` empty
    - no literal `TODO` or `TBD` anywhere in the file
    - size limits (`limits.designMaxLines` for design; structure ≤ ~2 pages)
-   - structure: every slice has a verification step (epic: every child entry
-     has a slug, goal, outcome, scope, and size estimate)
+   - structure: every slice has a verification step
    - design: every one-way decision has a chosen option
    - questions in `small` flow: `## Size verdict` is S
    - implementation: every slice in `04-structure.md` (`small` flow: every
@@ -139,35 +138,14 @@ Rules:
    existing `05-plan.md` and `06-implementation.md` stale; approving `design`
    in `full` flow marks `04-structure.md` onward stale. `implementation` is
    the last artifact, so it marks nothing stale. `plan` marks nothing stale in
-   this version, and `run` (the last artifact) marks nothing stale. Wholesale per feature,
-   except:
-   - **Epic design, re-approval after a revision:** targeted stale marking on
-     children, per `references/gates.md` ("Targeted stale marking"). An
-     epic design's first approval marks no child stale.
+   this version, and `run` (the last artifact) marks nothing stale. Wholesale per feature.
 7. **Design files:** flip every ADR this design drafted from
    `Status: Proposed` to `Status: Accepted`.
-8. **Epic structure (`04-structure.md` of a `kind: epic`):**
-   - **First approval:** create each listed child's folder,
-     `<artifactRoot>/<child-slug>/feature.md` (`<child-slug>` carries the
-     child's two-digit order per the epic-child slug rule in
-     `references/contract.md`; fix the slug if the structure entry lacks it),
-     with frontmatter `kind: feature`, `parent: <epic-slug>`, `order`,
-     `flow: standard`, `created`, and a body stating the child's goal,
-     outcome, scope, and dependencies from the structure entry, ending with
-     `## Flow log` and the line `- <today>: standard (default for an epic
-     child)` — the child's `grove-start` confirms or changes it. The child
-     starts in the backlog (no `01-questions.md`). Write the slugs, in order,
-     into the epic's `feature.md` `children:` list.
-   - **Re-approval after a revision:** create folders only for children newly
-     added to the list. A child removed from the list is **flagged, never
-     deleted**: leave its folder and artifacts in place, write a `FLAGGED.md`
-     in it saying why, and tell the human so they decide what to do by hand.
-9. **Tracker:** if `tracker.type: "linear"` and `tracker.postComments: true`,
+8. **Tracker:** if `tracker.type: "linear"` and `tracker.postComments: true`,
    offer to post a comment with the artifact path(s) and unit — ask first
    unless the human has clearly said they want it.
-10. **Report** what was approved, what went stale, which ADRs flipped, any
-    child folders created or flagged, and the next command. For `run`, the
-    next step is: commit the approved `04-run.md` on the run branch as
+9. **Report** what was approved, what went stale, which ADRs flipped, and
+    the next command. For `run`, the next step is: commit the approved `04-run.md` on the run branch as
     `<slug>: approve run` (approve does not commit), then merge or open a PR
     using the PR description in `## Final summary`.
 

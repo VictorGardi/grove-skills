@@ -1,6 +1,6 @@
 ---
 name: grove-spike
-description: A time-boxed, throwaway prototype in a scratch worktree that answers one concrete question, with findings written into a feature's research (or an epic's) and the code always deleted afterward. Load when the human wants to spike, prototype, or de-risk an unknown before committing to a design decision.
+description: A time-boxed, throwaway prototype in a scratch worktree that answers one concrete question, with findings written into a feature's research and the code always deleted afterward. Load when the human wants to spike, prototype, or de-risk an unknown before committing to a design decision.
 license: MIT
 ---
 
@@ -15,7 +15,7 @@ and delete the code. A spike never ships; its *answer* is the deliverable.
 
 ## When to use / not use
 
-- Use when `grove-research` or `grove-design` (epic or feature) hits a
+- Use when `grove-research` or `grove-design` hits a
   question that needs code run to answer, not just code read.
 - Do not use for anything meant to survive — that's a slice, built via
   `grove-implement` once a decision is made.
@@ -24,7 +24,7 @@ and delete the code. A spike never ships; its *answer* is the deliverable.
 
 ## Inputs
 
-- The feature slug (or epic slug) whose research the finding belongs in.
+- The feature slug whose research the finding belongs in.
 - One concrete question the spike must answer, agreed with the human before
   any code is written.
 - A time box, agreed with the human (default: 30 minutes of work).

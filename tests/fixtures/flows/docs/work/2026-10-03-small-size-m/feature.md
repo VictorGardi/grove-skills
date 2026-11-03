@@ -1,9 +1,5 @@
 ---
-kind: feature
-parent: ""
-children: []
 appetite: ""
-order: 0
 flow: small
 created: 2026-10-03
 ---
