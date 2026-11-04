@@ -120,9 +120,12 @@ If `<artifactRoot>/<slug>/03-plan.md` exists, go to step 10.
     `grove-approve <slug> plan` themselves, then `grove-run <slug>` from this
     checkout. `grove-run` commits the approved plan, then starts an
     orchestrator session in the run worktree and stops; the human continues
-    there. Mention that `grove-run <slug> --no-review` (or "skip slice 1
-    review") runs every slice without the slice-1 review stop; the final
-    review always happens.
+    there. Then, if `feature.md` has no `review_gate` line, ask through the
+    question tool whether `grove-run` should stop for the human's review after
+    slice 1 (*stop after slice 1*, recommended) or run every slice unattended
+    (*no slice-1 review*); the final review always happens either way. Write
+    the answer to `feature.md` as `review_gate: slice-1` or `review_gate: none`.
+    A `--no-review` / `--review-each` flag on `grove-run` still overrides it.
 
 ## Output
 
