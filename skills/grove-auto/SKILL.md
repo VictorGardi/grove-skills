@@ -117,7 +117,12 @@ If `<artifactRoot>/<slug>/03-plan.md` exists, go to step 10.
     to an approved artifact makes it draft per `references/contract.md`; never
     approve.
 11. **Close.** Report the paths. Tell the human to run
-    `grove-approve <slug> plan` themselves, then `grove-run <slug>`.
+    `grove-approve <slug> plan` themselves, then `grove-run <slug>` from this
+    checkout. `grove-run` commits the approved plan, then starts an
+    orchestrator session in the run worktree and stops; the human continues
+    there. Mention that `grove-run <slug> --no-review` (or "skip slice 1
+    review") runs every slice without the slice-1 review stop; the final
+    review always happens.
 
 ## Output
 
