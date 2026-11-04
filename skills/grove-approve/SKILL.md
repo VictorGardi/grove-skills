@@ -51,10 +51,11 @@ gate-satisfying state. The unit rules in `references/approve.md` apply: in
 
 1. Resolve the feature folder and the unit (above).
 2. Follow `references/approve.md` from "Procedure" step 1 to the end:
-   validate, summarise, ask *"Approve now? (yes / not yet)"*, and on an
-   explicit yes apply every effect (frontmatter, stale marking, ADR flips,
-   tracker comment). For `plan` and `run` the
-   prompt is a question-tool question, per `references/approve.md`. For `run`,
+   validate, summarise, and apply every effect (frontmatter, stale marking,
+   ADR flips, tracker comment). Running `grove-approve <slug> <unit>` with the
+   unit named is the approval: do not ask a yes/no. Only when the unit was
+   omitted, propose the pending one and ask *"Approve now? (yes / not yet)"*
+   (a question-tool question, per `references/approve.md`). For `run`,
    read `04-run.md` from the current worktree (cwd), not the main checkout,
    but resolve the CURRENT plan commit and version in the main checkout (first
    entry of `git worktree list --porcelain`), per `references/approve.md`; the
@@ -67,12 +68,13 @@ flipped ADRs.
 
 ## Stop conditions
 
-- Unclear confirmation: write nothing.
+- Unit omitted and the confirmation is unclear: write nothing.
 - A failing content gate without `--force`: report it and write nothing.
 
 ## Rules
 
-- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes approval prompts (offer *yes* and *not yet* as options).
+- Ask the human only through the question tool (`AskUserQuestion` in Claude, the equivalent in other agents), one question at a time, with the background and your recommendation; never as plain chat text. This includes the confirmation when the unit was omitted (offer *yes* and *not yet* as options). A named unit needs no question.
 - Never self-invoke, under any framing.
-- Approval always requires an explicit "yes" or "approve" from the human in
-  this session, even if they pre-authorized `--force`.
+- Approval always requires the human's explicit command naming the unit, or
+  an explicit "yes" or "approve" when the unit was omitted, in this session;
+  `--force` alone is never an approval.

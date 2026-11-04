@@ -25,12 +25,22 @@ resuming a session. A skill may *offer* approval only at its own inline step.
 
 ## What counts as approval
 
-Only an explicit **"yes"** or **"approve"** (e.g. "yes", "approve",
-"approve both") from the human, in reply to the prompt, in this session.
+Two things, both explicit and from the human in this session:
+
+- **The command itself.** The human typing `grove-approve <slug> <unit>` with
+  the unit named (or asking in their own words to approve a specific named
+  artifact) IS the approval. Do not ask again: after the checks, summarise and
+  apply. A second "Approve now?" would only make them say the same thing twice.
+- **A "yes" or "approve"** (e.g. "yes", "approve", "approve both") in reply to
+  the prompt. This is the path for inline approval at the end of a gated skill
+  (the human did not ask for approval, so it is offered) and for a
+  `grove-approve` with the unit omitted (you propose the unit, they confirm it).
 
 Everything else means **not yet**: silence, "looks good", "ok", "sure",
 "fine", "yes but change X", feedback, a question, or a new instruction. When
-in doubt, it's not yet. `--force` never stands in for the yes.
+in doubt, it's not yet. `--force` never stands in for an approval: it only
+overrides a failing check, and the approval itself is still the command or the
+yes.
 
 ## Approval units
 
@@ -115,12 +125,16 @@ Rules:
    If any check fails, list exactly what fails and stop — do not ask for
    approval. `--force <reason>` may override a failing check (never the `run`
    stale check or `plan`-approved precondition); record the
-   reason in that file's `forced` array, and still ask for the yes.
+   reason in that file's `forced` array. The approval is still the command or
+   the yes, not the flag.
 2. **Summarise**: at most 5 lines per file — what it says, what approving it
    unlocks next (e.g. "unlocks `grove-implement`"; `run` unlocks nothing
    further: it hands off to commit and merge), and anything that will be
    marked `stale` as a result.
-3. **Ask exactly:** *"Approve now? (yes / not yet)"*. For `questions+research`
+3. **Ask, unless the human's `grove-approve <slug> <unit>` already named the
+   unit** (see "What counts as approval"; then go straight to step 5 after the
+   summary, and say in the summary line that it is being approved as asked).
+   Otherwise **ask exactly:** *"Approve now? (yes / not yet)"*. For `questions+research`
    you may add a third answer, *"questions only"*. The prompt is a question-tool question (`references/contract.md` rule 9):
    options "Approve now" and "Not yet", the literal `Approve now? (yes / not yet)`
    stays in the question text. Then
