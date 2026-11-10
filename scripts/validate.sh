@@ -13,6 +13,10 @@ allowed_fields='name description license compatibility metadata disable-model-in
 # standalone form of the same procedure).
 gated_skills='grove-start grove-questions grove-research grove-design grove-structure grove-approve'
 
+# Reference skills document a tool rather than run a workflow phase: no question-tool,
+# command-wrapper or shared/ references requirement.
+reference_skills='grove'
+
 # Skills that must offer the end-of-phase handoff to a new grove session.
 handoff_skills='grove-start grove-questions grove-research grove-design grove-structure grove-implement'
 
@@ -76,14 +80,16 @@ for skill_dir in "$skills_dir"/*/; do
     fi
   fi
 
-  # every skill tells agents to ask through the question tool.
-  if ! grep -q 'AskUserQuestion' "$skill_md"; then
-    err "$skill_name: SKILL.md does not tell agents to ask through the question tool (AskUserQuestion)"
-  fi
+  if ! echo " $reference_skills " | grep -q " $skill_name "; then
+    # every phase skill tells agents to ask through the question tool.
+    if ! grep -q 'AskUserQuestion' "$skill_md"; then
+      err "$skill_name: SKILL.md does not tell agents to ask through the question tool (AskUserQuestion)"
+    fi
 
-  # matching command wrapper
-  if [[ ! -f "$commands_dir/$skill_name.md" ]]; then
-    err "$skill_name: no matching commands/$skill_name.md wrapper"
+    # matching command wrapper
+    if [[ ! -f "$commands_dir/$skill_name.md" ]]; then
+      err "$skill_name: no matching commands/$skill_name.md wrapper"
+    fi
   fi
 
   # no mention of third-party skills
@@ -97,7 +103,7 @@ while read -r file skills; do
   [[ -z "$file" || "$file" == \#* ]] && continue
   [[ -f "$repo_root/shared/$file" ]] || { err "shared/MANIFEST lists missing shared/$file"; continue; }
   if [[ "$skills" == "*" ]]; then
-    skills="$(cd "$skills_dir" && ls -d */ | tr -d /)"
+    skills="$(cd "$skills_dir" && ls -d */ | tr -d / | grep -vxF -f <(echo "$reference_skills" | tr ' ' '\n'))"
   fi
   for skill in $skills; do
     [[ -d "$skills_dir/$skill" ]] || { err "shared/MANIFEST lists unknown skill '$skill'"; continue; }

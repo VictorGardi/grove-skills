@@ -7,11 +7,13 @@ set -euo pipefail
 
 repo_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 skills_dir="$repo_root/skills"
+# Reference skills document a tool, not a workflow phase, so they get no shared/ copies.
+reference_skills='grove'
 
 while read -r file skills; do
   [[ -z "$file" || "$file" == \#* ]] && continue
   if [[ "$skills" == "*" ]]; then
-    skills="$(cd "$skills_dir" && ls -d */ | tr -d /)"
+    skills="$(cd "$skills_dir" && ls -d */ | tr -d / | grep -vxF -f <(echo "$reference_skills" | tr ' ' '\n'))"
   fi
   for skill in $skills; do
     mkdir -p "$skills_dir/$skill/references"
