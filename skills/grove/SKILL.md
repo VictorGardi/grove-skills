@@ -1,6 +1,6 @@
 ---
 name: grove
-description: Drive other Grove tabs from a Grove terminal or agent tab with the `grove` command. Use to list spaces and tabs, add a folder as a space, start another Claude, OpenCode, Copilot or shell tab in a space, send it a message, read its screen, wait for it to finish, focus or kill it.
+description: Start, message and read other Grove tabs with the `grove` command. Use whenever the human asks for another session, tab, agent or helper ("new session", "in the same space", "spin up a claude/copilot", "in a worktree", "run this in parallel", "have another agent do X", "use grove to ...") or wants to list spaces and tabs, send a tab a message, read its screen, wait for it, focus or kill it.
 license: MIT
 ---
 
@@ -21,15 +21,40 @@ characters, or its exact label. An unknown or ambiguous ref is an error
 4 characters, or the heading `grove ls` prints for it (its path, or `path#2`
 for a second space on one folder).
 
+## What the human says, what you run
+
+Defaults inside a Grove tab: the new tab goes in **your own space** and runs
+**your own agent kind**. Say less, not more.
+
+| The human says | You run |
+|---|---|
+| "new session / another tab to do X" | `grove new --prompt "X" --label <name>` |
+| "same space" | the default; add `--here` only to be explicit |
+| "a copilot / claude / opencode for X" | `grove new copilot --prompt "X" --label <name>` |
+| "in a worktree" / "in parallel, separate checkout" | `grove new --worktree <branch> --prompt "X" --label <branch>` |
+| "branch it off main/<ref>" | add `--base <ref>` (new branch only; default is this space's HEAD) |
+| "in the other space <path>" | `grove new --space <path> --prompt "X"` |
+| "and tell me what it finds" / "report back" | add `--wait`, then `grove read <label> --lines 60` |
+| "ask that tab ..." | `grove send <label> "..."` (add `--wait` to hear back) |
+
+Fire and forget is the default: start the tab, tell the human its label, and
+stop. Use `--wait` only when they ask for the result. Do not `kill` the tab
+when it finishes; the human may want to read or resume it.
+
+A shell tab has no agent kind to copy, so from one name the kind. Do not run
+`grove ls` first to find your space; the default already uses it.
+
 ## Commands
 
 ```
 grove ls [--json]                    spaces, each with its tabs (id, kind, state, label, alive)
 grove space add [path]               add a folder as a space (default: the caller folder)
 grove space ls                       same listing as ls
-grove new <terminal|claude|opencode|copilot> [--cwd DIR | --space REF] [--label L]
+grove new [terminal|claude|opencode|copilot] [--here | --cwd DIR | --space REF]
+          [--worktree BRANCH [--base REF]] [--label L]
           [--prompt TEXT|-] [--wait] [--timeout S] [--json]
-                                     start a tab in a space; prints its id
+                                     start a tab; prints its id. In a tab: your space and
+                                     kind by default
 grove send <ref> <TEXT|-> [--no-enter] [--wait] [--timeout S]
                                      paste text into a tab and submit it
 grove wait <ref> [--timeout S]       block until the agent stops working
@@ -42,10 +67,17 @@ grove integration install claude | uninstall <claude|copilot>
                                      add or remove the hooks that report hand-typed agents
 ```
 
-`-` as the text or prompt reads stdin. `--cwd` defaults to the folder you run
-from and must already be a space: a folder that is not one fails with
-`not a space`, and `grove space add <path>` fixes that. `--cwd` and `--space`
-cannot be combined. Two spaces may share a folder; `--cwd` uses the first.
+`-` as the text or prompt reads stdin. Inside a Grove tab `new` targets your own
+space; outside one, `--cwd` defaults to the folder you run from and must already
+be a space: a folder that is not one fails with `not a space`, and
+`grove space add <path>` fixes that. `--here`, `--cwd` and `--space` cannot be
+combined; `--here` fails outside a Grove tab.
+
+`--worktree BRANCH` opens BRANCH as a worktree space of the target's repo and
+starts the tab in it. A branch that is already a space is reused (stderr says
+`reusing <path>`); one that exists but is not a space is checked out; a new one
+starts at `--base` (any git ref), else the target's HEAD. `--base` with a branch
+that exists is an error. It cannot be combined with `--cwd`. Two spaces may share a folder; `--cwd` uses the first.
 `--wait` needs an agent: a shell tab has no state to wait on.
 
 A tab's `state` in `ls` is `working`, `needs-you`, `finished`, `idle`,
@@ -68,7 +100,7 @@ A tab's `state` in `ls` is `working`, `needs-you`, `finished`, `idle`,
 Hand work to a helper and wait for it:
 
 ```
-id=$(grove new claude --space ~/git/other --label helper --prompt "run the tests and summarise failures" --wait)
+id=$(grove new --space ~/git/other --label helper --prompt "run the tests and summarise failures" --wait)
 code=$?
 grove read "$id" --lines 60
 ```
@@ -91,8 +123,11 @@ grove send helper "which files did you change?" --wait && grove read helper --li
   characters, no timestamps, with what tells siblings apart first.
 - Do small read-only fan-out inside your own session with subagents. A tab is
   for work the human may want to watch, review or resume.
-- To keep two tabs from touching the same files, open each in its own worktree
-  space (the app creates worktree spaces; there is no worktree flag on `new`).
+- To keep two tabs from touching the same files, give each its own checkout:
+  `grove new --worktree <branch>`. Name the branch from the task in short
+  kebab-case, no prefix or date, and use it as the `--label` too, unless the
+  human named one. Worktrees stay after `kill`: never delete a worktree space or
+  checkout yourself; that is the human's call.
 
 ## Notes
 
