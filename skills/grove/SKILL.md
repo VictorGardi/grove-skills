@@ -47,7 +47,7 @@ A shell tab has no agent kind to copy, so from one name the kind. Do not run
 ## Commands
 
 ```
-grove ls [--json]                    spaces, each with its tabs (id, kind, state, label, alive)
+grove ls [--json]                    spaces, each with its tabs (id, kind, state, context, label, alive)
 grove space add [path]               add a folder as a space (default: the caller folder)
 grove space ls                       same listing as ls
 grove new [terminal|claude|opencode|copilot] [--here | --cwd DIR | --space REF]
@@ -83,6 +83,16 @@ that exists is an error. It cannot be combined with `--cwd`. Two spaces may shar
 A tab's `state` in `ls` is `working`, `needs-you`, `finished`, `idle`,
 `unknown`, or `-` for a shell. `unknown` means the agent has reported nothing
 (too old, or it never sends status) or the tab is gone.
+
+A tab's `context` in `ls` is how full its agent's context window is, as the
+share of the window and a level: `42% ok`, `55% warn`, `75% handoff`. Without a
+window it is the token count and level (`120k warn`); `-` means there is no
+reading to judge (a shell, no request yet, or just after a compaction). The
+level is the first of tokens or share to cross a line: **warn** from 150k tokens
+or 50% of the window, **handoff** from 200k tokens or 70%. With `--json`
+each tab has `level` (`ok`, `warn`, `handoff` or `null`) and `context`
+(`tokens`, `window`, `percent`, `at`, each possibly `null`). Act on `level`;
+do not work it out from the numbers.
 
 ## Exit codes
 
@@ -128,6 +138,41 @@ grove send helper "which files did you change?" --wait && grove read helper --li
   kebab-case, no prefix or date, and use it as the `--label` too, unless the
   human named one. Worktrees stay after `kill`: never delete a worktree space or
   checkout yourself; that is the human's call.
+
+## Watching context
+
+Check `level` in `grove ls --json` at step boundaries only: for yourself (your
+row is the tab named by `GROVE_TAB`) after reading a worker's result and before
+starting the next step, and for a worker when its `state` is `finished` or
+`idle`. Never while it is `working`, and never interrupt a turn to check.
+
+- `ok`, or no level: carry on. A `-` right after a compaction is normal; check
+  again at the next step.
+- `warn`: start nothing big in that tab. Yourself: stop widening scope and plan
+  to hand off at the next step boundary. A worker: send it no new steps; start
+  the next one in a fresh tab.
+- `handoff`: with work remaining, move it to a new tab. Without any, just
+  finish.
+
+Hand off yourself: write a brief and start a fresh tab with it as the prompt:
+
+```
+grove new --label orchestrator-2 --prompt - <<'BRIEF'
+<brief>
+BRIEF
+```
+
+The brief is self-contained (the new tab sees none of your context): the goal,
+what is done with commit or file pointers, what is next, open decisions and what
+the human has approved, and the labels of the live tabs, which it takes over
+with `send` and `read`. Name the new tab like the old one with the next number.
+Then tell the human the new label and stop; do not wait for it.
+
+Hand off a worker: `grove read <worker> --lines 60`, write the next step's
+prompt with what it needs from that screen, and `grove new` a fresh tab for it.
+Do not `send` into the old tab, and leave it for the human.
+
+Never `kill` the old tab either way.
 
 ## Notes
 
